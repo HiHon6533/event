@@ -1,0 +1,87 @@
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { eventApi } from '../services/api';
+import EventCard from '../components/EventCard';
+import { CATEGORY_LABELS } from '../utils/helpers';
+import { HiOutlineSearch } from 'react-icons/hi';
+
+export default function EventsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [events, setEvents] = useState([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [keyword, setKeyword] = useState(searchParams.get('keyword') || '');
+  const category = searchParams.get('category') || '';
+  const page = parseInt(searchParams.get('page') || '0');
+
+  useEffect(() => {
+    setLoading(true);
+    const params = { page, size: 12 };
+    if (category) params.category = category;
+    if (keyword) params.keyword = keyword;
+    eventApi.getPublished(params)
+      .then(res => { setEvents(res.data.content); setTotalPages(res.data.totalPages); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [category, page, searchParams]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setSearchParams(prev => { prev.set('keyword', keyword); prev.set('page', '0'); return prev; });
+  };
+
+  const handleCategory = (cat) => {
+    setSearchParams(prev => {
+      if (cat) prev.set('category', cat); else prev.delete('category');
+      prev.set('page', '0');
+      return prev;
+    });
+  };
+
+  return (
+    <div className="container section fade-in">
+      <h1 className="section-title">🎪 Tất cả sự kiện</h1>
+      <p className="section-subtitle">Khám phá và tìm sự kiện phù hợp với bạn</p>
+
+      {/* Search & Filter */}
+      <div style={{ display: 'flex', gap: 16, marginBottom: 32, flexWrap: 'wrap' }}>
+        <form onSubmit={handleSearch} style={{ display: 'flex', gap: 8, flex: 1, minWidth: 250 }}>
+          <input className="form-input" placeholder="Tìm kiếm sự kiện..." value={keyword}
+            onChange={e => setKeyword(e.target.value)} />
+          <button type="submit" className="btn btn-primary"><HiOutlineSearch /></button>
+        </form>
+      </div>
+
+      {/* Category Pills */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 32 }}>
+        <button className={`btn btn-sm ${!category ? 'btn-primary' : 'btn-outline'}`}
+          onClick={() => handleCategory('')}>Tất cả</button>
+        {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+          <button key={key} className={`btn btn-sm ${category === key ? 'btn-primary' : 'btn-outline'}`}
+            onClick={() => handleCategory(key)}>{label}</button>
+        ))}
+      </div>
+
+      {/* Events Grid */}
+      {loading ? <div className="spinner" /> : (
+        <>
+          {events.length > 0 ? (
+            <div className="grid grid-3">{events.map(e => <EventCard key={e.id} event={e} />)}</div>
+          ) : (
+            <div className="empty-state"><p>Không tìm thấy sự kiện nào</p></div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="pagination">
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button key={i} className={i === page ? 'active' : ''}
+                  onClick={() => setSearchParams(prev => { prev.set('page', i.toString()); return prev; })}>{i + 1}</button>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
