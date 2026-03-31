@@ -44,8 +44,12 @@ public class Booking {
     @Builder.Default
     private BookingStatus status = BookingStatus.PENDING;
 
-    @Column(name = "qr_ticket_url", columnDefinition = "TEXT")
-    private String qrTicketUrl;
+    @Column(name = "qr_secret_token", columnDefinition = "TEXT")
+    private String qrSecretToken;
+
+    @Column(name = "is_checked_in", nullable = false)
+    @Builder.Default
+    private Boolean isCheckedIn = false;
 
     @Column(columnDefinition = "TEXT")
     private String note;

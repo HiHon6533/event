@@ -30,7 +30,7 @@ export default function VerifyEmailPage() {
       const { data } = await authApi.verifyEmail({ email, otpCode });
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      navigate('/');
+      window.location.href = '/';
     } catch (err) {
       setError(err.response?.data?.message || 'Xác thực thất bại');
     } finally {

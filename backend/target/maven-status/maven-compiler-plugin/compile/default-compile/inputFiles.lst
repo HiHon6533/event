@@ -1,4 +1,5 @@
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\entity\enums\BookingStatus.java
+D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\config\DataInitializer.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\service\PaymentService.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\dto\response\VenueResponse.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\mapper\EventMapper.java
@@ -6,6 +7,7 @@ D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\entity\Venue.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\entity\enums\EventStatus.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\mapper\BookingMapper.java
+D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\service\QRCodeService.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\service\impl\TicketServiceImpl.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\repository\TicketCategoryRepository.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\exception\GlobalExceptionHandler.java
@@ -46,6 +48,7 @@ D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\service\impl\DashboardServiceImpl.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\entity\enums\UserRole.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\entity\enums\PaymentStatus.java
+D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\controller\CheckInController.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\dto\request\UpdateProfileRequest.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\entity\enums\ZoneType.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\repository\BookingRepository.java
@@ -59,7 +62,6 @@ D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\dto\request\TicketCategoryRequest.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\dto\response\TicketCategoryResponse.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\dto\request\BookingDetailRequest.java
-D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\config\DataSeeder.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\service\impl\VenueServiceImpl.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\service\VNPayService.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\dto\response\UserResponse.java

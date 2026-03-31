@@ -22,7 +22,8 @@ public class BookingResponse {
     private Integer totalTickets;
     private BigDecimal totalAmount;
     private BookingStatus status;
-    private String qrTicketUrl;
+    private String qrSecretToken;
+    private Boolean isCheckedIn;
     private String note;
     private LocalDateTime bookingDate;
     private List<BookingDetailResponse> bookingDetails;

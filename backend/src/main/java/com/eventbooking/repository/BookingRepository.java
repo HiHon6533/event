@@ -20,6 +20,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     Page<Booking> findByUserId(Long userId, Pageable pageable);
 
     Optional<Booking> findByBookingCode(String bookingCode);
+    
+    Optional<Booking> findByQrSecretToken(String qrSecretToken);
 
     Page<Booking> findByEventId(Long eventId, Pageable pageable);
 
