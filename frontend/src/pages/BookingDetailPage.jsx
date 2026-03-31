@@ -99,11 +99,12 @@ export default function BookingDetailPage() {
         </div>
       )}
 
-      {/* QR Code */}
-      {booking.qrTicketUrl && (
-        <div className="card" style={{ padding: 24, marginBottom: 24, textAlign: 'center' }}>
-          <h3 style={{ fontWeight: 700, marginBottom: 16 }}>📱 Mã QR vé</h3>
-          <img src={`data:image/png;base64,${booking.qrTicketUrl}`} alt="QR Code" style={{ maxWidth: 200, margin: '0 auto' }} />
+      {/* Virtual E-Ticket Email Confirmation */}
+      {booking.status === 'CONFIRMED' && (
+        <div className="card" style={{ padding: 24, marginBottom: 24, textAlign: 'center', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+          <h3 style={{ fontWeight: 700, marginBottom: 8, color: '#10b981' }}>📱 Vé Điện Tử</h3>
+          <p style={{ color: 'var(--text-secondary)' }}>Mã QR vé điện tử đã được gửi về email của bạn.</p>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Vui lòng kiểm tra hộp thư đến (và thư mục rác) để lấy mã Check-in tại cổng sự kiện.</p>
         </div>
       )}
 

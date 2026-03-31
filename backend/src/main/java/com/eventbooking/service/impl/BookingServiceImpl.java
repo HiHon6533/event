@@ -71,7 +71,8 @@ public class BookingServiceImpl implements BookingService {
                 .bookingDate(LocalDateTime.now())
                 .status(BookingStatus.PENDING)
                 .note(request.getNote())
-                .qrTicketUrl(UUID.randomUUID().toString())
+                .qrSecretToken(null) // Assigned later when paid
+                .isCheckedIn(false)
                 .build();
 
         int totalTickets = 0;
@@ -210,6 +211,6 @@ public class BookingServiceImpl implements BookingService {
         if (!booking.getUser().getId().equals(userId)) {
             throw new BadRequestException("Bạn không có quyền xem mã QR này");
         }
-        return booking.getQrTicketUrl();
+        return booking.getQrSecretToken();
     }
 }

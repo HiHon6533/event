@@ -30,13 +30,18 @@ public class PaymentController {
     private final VNPayService vnPayService;
     private final BookingRepository bookingRepository;
     private final PaymentRepository paymentRepository;
+    private final com.eventbooking.service.QRCodeService qrCodeService;
+    private final com.eventbooking.service.EmailService emailService;
 
     public PaymentController(PaymentService paymentService, VNPayService vnPayService,
-                            BookingRepository bookingRepository, PaymentRepository paymentRepository) {
+                            BookingRepository bookingRepository, PaymentRepository paymentRepository,
+                            com.eventbooking.service.QRCodeService qrCodeService, com.eventbooking.service.EmailService emailService) {
         this.paymentService = paymentService;
         this.vnPayService = vnPayService;
         this.bookingRepository = bookingRepository;
         this.paymentRepository = paymentRepository;
+        this.qrCodeService = qrCodeService;
+        this.emailService = emailService;
     }
 
     @PostMapping("/create-vnpay-url")
@@ -93,8 +98,26 @@ public class PaymentController {
                 paymentRepository.save(payment);
 
                 booking.setStatus(BookingStatus.CONFIRMED);
+                
+                // 1. Generate Secret Token
+                String qrToken = UUID.randomUUID().toString();
+                booking.setQrSecretToken(qrToken);
                 booking.setPayment(payment);
+                
+                // 2. Save Booking
                 bookingRepository.save(booking);
+
+                // 3. Generate QR Code Image bytes
+                byte[] qrImage = qrCodeService.generateQRCodeImage(qrToken, 300, 300);
+
+                // 4. Send Email asynchronously
+                emailService.sendTicketEmail(
+                        booking.getUser().getEmail(),
+                        booking.getUser().getFullName(),
+                        booking.getBookingCode(),
+                        booking.getEvent().getTitle(),
+                        qrImage
+                );
             }
             return ResponseEntity.ok(Map.of(
                     "status", "SUCCESS",

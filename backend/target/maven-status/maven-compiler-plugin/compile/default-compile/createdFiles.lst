@@ -112,7 +112,6 @@ com\eventbooking\dto\response\VenueResponse.class
 com\eventbooking\exception\GlobalExceptionHandler.class
 com\eventbooking\dto\response\DailyRevenueResponse$DailyRevenueResponseBuilder.class
 com\eventbooking\controller\PaymentController.class
-com\eventbooking\config\DataSeeder.class
 com\eventbooking\exception\ResourceNotFoundException.class
 com\eventbooking\entity\User$UserBuilder.class
 com\eventbooking\mapper\TicketCategoryMapper.class

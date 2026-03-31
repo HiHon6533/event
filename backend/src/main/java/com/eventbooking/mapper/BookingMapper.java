@@ -30,7 +30,8 @@ public class BookingMapper {
                 .totalTickets(booking.getTotalTickets())
                 .totalAmount(booking.getTotalAmount())
                 .status(booking.getStatus())
-                .qrTicketUrl(booking.getQrTicketUrl())
+                .qrSecretToken(booking.getQrSecretToken())
+                .isCheckedIn(booking.getIsCheckedIn())
                 .note(booking.getNote())
                 .bookingDate(booking.getBookingDate())
                 .bookingDetails(booking.getBookingDetails() != null
