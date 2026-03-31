@@ -85,10 +85,10 @@ public class PaymentController {
                 Payment payment = Payment.builder()
                         .booking(booking)
                         .amount(booking.getTotalAmount())
-                        .method(com.eventbooking.entity.enums.PaymentMethod.VNPAY)
+                        .paymentMethod(com.eventbooking.entity.enums.PaymentMethod.VNPAY)
                         .transactionId(params.get("vnp_TransactionNo"))
                         .status(PaymentStatus.SUCCESS)
-                        .paymentTime(LocalDateTime.now())
+                        .paymentDate(LocalDateTime.now())
                         .build();
                 paymentRepository.save(payment);
 

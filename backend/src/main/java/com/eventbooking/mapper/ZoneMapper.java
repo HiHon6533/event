@@ -14,6 +14,7 @@ public class ZoneMapper {
                 .venueName(zone.getVenue().getName())
                 .name(zone.getName())
                 .description(zone.getDescription())
+                .type(zone.getType() != null ? zone.getType().name() : null)
                 .capacity(zone.getCapacity())
                 .sortOrder(zone.getSortOrder())
                 .isActive(zone.getIsActive())

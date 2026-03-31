@@ -43,7 +43,7 @@ export default function AdminBookingsPage() {
                         {STATUS_LABELS[b.status] || b.status}
                       </span>
                     </td>
-                    <td style={{ fontSize: '0.85rem' }}>{formatDateTime(b.bookingTime)}</td>
+                    <td style={{ fontSize: '0.85rem' }}>{formatDateTime(b.bookingDate)}</td>
                   </tr>
                 ))}
               </tbody>

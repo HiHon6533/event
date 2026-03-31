@@ -44,8 +44,8 @@ public class TicketCategory {
     @Builder.Default
     private Integer soldQuantity = 0;
 
-    @Column(name = "available_quantity", nullable = false)
-    private Integer availableQuantity;
+    @Column(name = "remaining_quantity", nullable = false)
+    private Integer remainingQuantity;
 
     @Column(name = "max_per_booking", nullable = false)
     @Builder.Default
@@ -55,6 +55,10 @@ public class TicketCategory {
     @Column(nullable = false, length = 20)
     @Builder.Default
     private TicketStatus status = TicketStatus.AVAILABLE;
+
+    @OneToMany(mappedBy = "ticketCategory", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
+    private java.util.List<BookingDetail> bookingDetails = new java.util.ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

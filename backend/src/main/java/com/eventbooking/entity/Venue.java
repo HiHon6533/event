@@ -41,6 +41,9 @@ public class Venue {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "seat_map_image")
+    private String seatMapImage;
+
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private Boolean isActive = true;

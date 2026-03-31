@@ -44,14 +44,14 @@ public class Booking {
     @Builder.Default
     private BookingStatus status = BookingStatus.PENDING;
 
-    @Column(name = "qr_code", columnDefinition = "TEXT")
-    private String qrCode;
+    @Column(name = "qr_ticket_url", columnDefinition = "TEXT")
+    private String qrTicketUrl;
 
     @Column(columnDefinition = "TEXT")
     private String note;
 
-    @Column(name = "booking_time", nullable = false)
-    private LocalDateTime bookingTime;
+    @Column(name = "booking_date", nullable = false)
+    private LocalDateTime bookingDate;
 
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default

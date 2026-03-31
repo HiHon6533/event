@@ -59,7 +59,7 @@ public class TicketCategoryServiceImpl implements TicketCategoryService {
                 .price(request.getPrice())
                 .totalQuantity(request.getTotalQuantity())
                 .soldQuantity(0)
-                .availableQuantity(request.getTotalQuantity())
+                .remainingQuantity(request.getTotalQuantity())
                 .maxPerBooking(request.getMaxPerBooking() != null ? request.getMaxPerBooking() : 10)
                 .status(TicketStatus.AVAILABLE)
                 .build();
@@ -80,7 +80,7 @@ public class TicketCategoryServiceImpl implements TicketCategoryService {
 
         int diff = request.getTotalQuantity() - tc.getTotalQuantity();
         tc.setTotalQuantity(request.getTotalQuantity());
-        tc.setAvailableQuantity(tc.getAvailableQuantity() + diff);
+        tc.setRemainingQuantity(tc.getRemainingQuantity() + diff);
 
         if (request.getMaxPerBooking() != null) tc.setMaxPerBooking(request.getMaxPerBooking());
 

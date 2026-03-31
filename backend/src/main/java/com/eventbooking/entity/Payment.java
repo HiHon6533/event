@@ -32,16 +32,16 @@ public class Payment {
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private PaymentMethod method;
+    @Column(name = "payment_method", nullable = false, length = 20)
+    private PaymentMethod paymentMethod;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
     private PaymentStatus status = PaymentStatus.PENDING;
 
-    @Column(name = "payment_time")
-    private LocalDateTime paymentTime;
+    @Column(name = "payment_date")
+    private LocalDateTime paymentDate;
 
     @Column(columnDefinition = "TEXT")
     private String note;

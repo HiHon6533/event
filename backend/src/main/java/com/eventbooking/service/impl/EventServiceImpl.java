@@ -106,7 +106,7 @@ public class EventServiceImpl implements EventService {
                 .thumbnailUrl(request.getThumbnailUrl())
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
-                .status(EventStatus.PUBLISHED) // publish immediately based on user consent
+                .status(EventStatus.DRAFT) // create as draft so admin can review and publish later
                 .isFeatured(request.getIsFeatured() != null ? request.getIsFeatured() : false)
                 .build();
 

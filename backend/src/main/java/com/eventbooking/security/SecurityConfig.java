@@ -35,6 +35,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/venues/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/tickets/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/payment/vnpay-return").permitAll()
 
                 // Admin endpoints

@@ -51,10 +51,10 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = Payment.builder()
                 .booking(booking)
                 .amount(booking.getTotalAmount())
-                .method(request.getMethod())
+                .paymentMethod(request.getMethod())
                 .transactionId("TXN-" + UUID.randomUUID().toString().substring(0, 12).toUpperCase())
                 .status(PaymentStatus.SUCCESS)
-                .paymentTime(LocalDateTime.now())
+                .paymentDate(LocalDateTime.now())
                 .build();
 
         payment = paymentRepository.save(payment);

@@ -30,9 +30,9 @@ public class BookingMapper {
                 .totalTickets(booking.getTotalTickets())
                 .totalAmount(booking.getTotalAmount())
                 .status(booking.getStatus())
-                .qrCode(booking.getQrCode())
+                .qrTicketUrl(booking.getQrTicketUrl())
                 .note(booking.getNote())
-                .bookingTime(booking.getBookingTime())
+                .bookingDate(booking.getBookingDate())
                 .bookingDetails(booking.getBookingDetails() != null
                         ? booking.getBookingDetails().stream()
                             .map(this::toDetailResponse)

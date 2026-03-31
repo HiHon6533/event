@@ -18,7 +18,7 @@ public class TicketCategoryMapper {
                 .price(tc.getPrice())
                 .totalQuantity(tc.getTotalQuantity())
                 .soldQuantity(tc.getSoldQuantity())
-                .availableQuantity(tc.getAvailableQuantity())
+                .remainingQuantity(tc.getRemainingQuantity())
                 .maxPerBooking(tc.getMaxPerBooking())
                 .status(tc.getStatus())
                 .build();

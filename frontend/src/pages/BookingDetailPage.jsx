@@ -65,7 +65,7 @@ export default function BookingDetailPage() {
       {/* Event Info */}
       <div className="card" style={{ padding: 24, marginBottom: 24 }}>
         <h3 style={{ fontWeight: 700, marginBottom: 12 }}>📅 {booking.eventTitle}</h3>
-        <p style={{ color: 'var(--text-muted)' }}>Thời gian đặt: {formatDateTime(booking.bookingTime)}</p>
+        <p style={{ color: 'var(--text-muted)' }}>Thời gian đặt: {formatDateTime(booking.bookingDate)}</p>
       </div>
 
       {/* Ticket Details */}
@@ -91,7 +91,7 @@ export default function BookingDetailPage() {
         <div className="card" style={{ padding: 24, marginBottom: 24 }}>
           <h3 style={{ fontWeight: 700, marginBottom: 12 }}>💳 Thanh toán</h3>
           <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-            <span>Phương thức: {booking.payment.method}</span>
+            <span>Phương thức: {booking.payment.paymentMethod}</span>
             <span className="badge" style={{ background: STATUS_COLORS[booking.payment.status], color: 'white' }}>
               {STATUS_LABELS[booking.payment.status]}
             </span>
@@ -100,10 +100,10 @@ export default function BookingDetailPage() {
       )}
 
       {/* QR Code */}
-      {booking.qrCode && (
+      {booking.qrTicketUrl && (
         <div className="card" style={{ padding: 24, marginBottom: 24, textAlign: 'center' }}>
           <h3 style={{ fontWeight: 700, marginBottom: 16 }}>📱 Mã QR vé</h3>
-          <img src={`data:image/png;base64,${booking.qrCode}`} alt="QR Code" style={{ maxWidth: 200, margin: '0 auto' }} />
+          <img src={`data:image/png;base64,${booking.qrTicketUrl}`} alt="QR Code" style={{ maxWidth: 200, margin: '0 auto' }} />
         </div>
       )}
 

@@ -12,6 +12,7 @@ public class ZoneResponse {
     private String venueName;
     private String name;
     private String description;
+    private String type;
     private Integer capacity;
     private Integer sortOrder;
     private Boolean isActive;

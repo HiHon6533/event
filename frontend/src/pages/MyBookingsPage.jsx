@@ -45,7 +45,7 @@ export default function MyBookingsPage() {
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                <span>{formatDateTime(b.bookingTime)} • {b.totalTickets} vé</span>
+                <span>{formatDateTime(b.bookingDate)} • {b.totalTickets} vé</span>
                 <span style={{ fontWeight: 700, color: 'var(--primary-light)' }}>{formatCurrency(b.totalAmount)}</span>
               </div>
             </Link>

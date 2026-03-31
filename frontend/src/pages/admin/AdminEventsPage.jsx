@@ -222,6 +222,11 @@ export default function AdminEventsPage() {
                 </div>
               </div>
 
+              <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }}>
+                <input type="checkbox" id="isFeatured" checked={formData.isFeatured} onChange={e => setFormData({...formData, isFeatured: e.target.checked})} style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
+                <label htmlFor="isFeatured" style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>Đánh dấu là "Sự kiện nổi bật" (🔥 Hot)</label>
+              </div>
+
               <div style={{ padding: '16px 0 0 0', display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid var(--border)' }}>
                 <button type="button" className="btn btn-secondary" style={{ padding: '10px 20px', background: 'var(--bg-lighter)', borderRadius: '8px', border: 'none', color: '#fff', cursor: 'pointer' }} onClick={() => setIsModalOpen(false)}>Hủy</button>
                 <button type="submit" className="btn btn-primary" style={{ padding: '10px 24px', background: 'var(--primary)', borderRadius: '8px', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: 600 }}>{isEditMode ? 'Lưu thay đổi' : 'Tạo sự kiện'}</button>
