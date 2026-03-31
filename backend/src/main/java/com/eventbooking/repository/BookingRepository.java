@@ -29,7 +29,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     BigDecimal getTotalRevenue();
 
     @Query("SELECT COALESCE(SUM(b.totalAmount), 0) FROM Booking b " +
-           "WHERE b.status = 'CONFIRMED' AND b.bookingTime BETWEEN :start AND :end")
+           "WHERE b.status = 'CONFIRMED' AND b.bookingDate BETWEEN :start AND :end")
     BigDecimal getRevenueBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     @Query("SELECT COUNT(b) FROM Booking b WHERE b.status = :status")
@@ -44,7 +44,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     BigDecimal getTotalRevenueByManagerId(@Param("managerId") Long managerId);
 
     @Query("SELECT COALESCE(SUM(b.totalAmount), 0) FROM Booking b " +
-           "WHERE b.status = 'CONFIRMED' AND b.bookingTime BETWEEN :start AND :end AND b.event.manager.id = :managerId")
+           "WHERE b.status = 'CONFIRMED' AND b.bookingDate BETWEEN :start AND :end AND b.event.manager.id = :managerId")
     BigDecimal getRevenueBetweenAndManagerId(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end, @Param("managerId") Long managerId);
 
     @Query("SELECT COUNT(b) FROM Booking b WHERE b.event.manager.id = :managerId")
@@ -53,9 +53,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT COUNT(b) FROM Booking b WHERE b.status = :status AND b.event.manager.id = :managerId")
     long countByStatusAndManagerId(@Param("status") BookingStatus status, @Param("managerId") Long managerId);
 
-    @Query("SELECT b FROM Booking b WHERE b.status = 'CONFIRMED' AND b.bookingTime >= :startDate")
+    @Query("SELECT b FROM Booking b WHERE b.status = 'CONFIRMED' AND b.bookingDate >= :startDate")
     List<Booking> findConfirmedBookingsSince(@Param("startDate") LocalDateTime startDate);
 
-    @Query("SELECT b FROM Booking b WHERE b.status = 'CONFIRMED' AND b.bookingTime >= :startDate AND b.event.manager.id = :managerId")
+    @Query("SELECT b FROM Booking b WHERE b.status = 'CONFIRMED' AND b.bookingDate >= :startDate AND b.event.manager.id = :managerId")
     List<Booking> findConfirmedBookingsSinceByManagerId(@Param("startDate") LocalDateTime startDate, @Param("managerId") Long managerId);
 }

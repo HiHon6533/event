@@ -41,8 +41,9 @@ public class VNPayService {
         vnpParams.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
         vnpParams.put("vnp_IpAddr", ipAddress);
 
-        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        formatter.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         String vnpCreateDate = formatter.format(calendar.getTime());
         vnpParams.put("vnp_CreateDate", vnpCreateDate);
 
@@ -57,9 +58,11 @@ public class VNPayService {
         Iterator<Map.Entry<String, String>> itr = vnpParams.entrySet().iterator();
         while (itr.hasNext()) {
             Map.Entry<String, String> entry = itr.next();
-            hashData.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII));
-            query.append(URLEncoder.encode(entry.getKey(), StandardCharsets.US_ASCII))
-                 .append('=').append(URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII));
+            String encodedKey = URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8).replace("+", "%20");
+            String encodedValue = URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8).replace("+", "%20");
+
+            hashData.append(entry.getKey()).append('=').append(encodedValue);
+            query.append(encodedKey).append('=').append(encodedValue);
             if (itr.hasNext()) {
                 hashData.append('&');
                 query.append('&');
@@ -68,13 +71,15 @@ public class VNPayService {
 
         String vnpSecureHash = hmacSHA512(vnPayConfig.getHashSecret(), hashData.toString());
         query.append("&vnp_SecureHash=").append(vnpSecureHash);
+        query.append("&vnp_SecureHashType=HmacSHA512");
 
         return vnPayConfig.getVnpUrl() + "?" + query.toString();
     }
 
     public boolean validateSignature(Map<String, String> params) {
         String vnpSecureHash = params.get("vnp_SecureHash");
-        if (vnpSecureHash == null) return false;
+        if (vnpSecureHash == null)
+            return false;
 
         Map<String, String> sortedParams = new TreeMap<>(params);
         sortedParams.remove("vnp_SecureHash");
@@ -84,7 +89,9 @@ public class VNPayService {
         Iterator<Map.Entry<String, String>> itr = sortedParams.entrySet().iterator();
         while (itr.hasNext()) {
             Map.Entry<String, String> entry = itr.next();
-            hashData.append(entry.getKey()).append('=').append(URLEncoder.encode(entry.getValue(), StandardCharsets.US_ASCII));
+            String encodedValue = URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8).replace("+", "%20");
+
+            hashData.append(entry.getKey()).append('=').append(encodedValue);
             if (itr.hasNext()) {
                 hashData.append('&');
             }

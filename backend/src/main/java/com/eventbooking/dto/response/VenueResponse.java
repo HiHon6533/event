@@ -17,6 +17,7 @@ public class VenueResponse {
     private String phone;
     private Integer totalCapacity;
     private String imageUrl;
+    private String seatMapImage;
     private String description;
     private Boolean isActive;
     private List<ZoneResponse> zones;

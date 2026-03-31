@@ -30,6 +30,10 @@ public class Zone {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private com.eventbooking.entity.enums.ZoneType type;
+
     @Column(nullable = false)
     private Integer capacity;
 

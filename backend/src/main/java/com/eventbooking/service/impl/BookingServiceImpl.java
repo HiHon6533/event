@@ -68,10 +68,10 @@ public class BookingServiceImpl implements BookingService {
                 .user(user)
                 .event(event)
                 .bookingCode(bookingCode)
-                .bookingTime(LocalDateTime.now())
+                .bookingDate(LocalDateTime.now())
                 .status(BookingStatus.PENDING)
                 .note(request.getNote())
-                .qrCode(UUID.randomUUID().toString())
+                .qrTicketUrl(UUID.randomUUID().toString())
                 .build();
 
         int totalTickets = 0;
@@ -83,9 +83,9 @@ public class BookingServiceImpl implements BookingService {
                     .orElseThrow(() -> new ResourceNotFoundException("TicketCategory", "id", itemReq.getTicketCategoryId()));
 
             // Check availability
-            if (tc.getAvailableQuantity() < itemReq.getQuantity()) {
+            if (tc.getRemainingQuantity() < itemReq.getQuantity()) {
                 throw new InsufficientTicketException(
-                        "Không đủ vé '" + tc.getName() + "'. Còn lại: " + tc.getAvailableQuantity());
+                        "Không đủ vé '" + tc.getName() + "'. Còn lại: " + tc.getRemainingQuantity());
             }
 
             // Check max per booking
@@ -110,7 +110,7 @@ public class BookingServiceImpl implements BookingService {
 
             // Decrease available quantity
             tc.setSoldQuantity(tc.getSoldQuantity() + itemReq.getQuantity());
-            tc.setAvailableQuantity(tc.getAvailableQuantity() - itemReq.getQuantity());
+            tc.setRemainingQuantity(tc.getRemainingQuantity() - itemReq.getQuantity());
             ticketCategoryRepository.save(tc);
         }
 
@@ -143,7 +143,7 @@ public class BookingServiceImpl implements BookingService {
     @Transactional(readOnly = true)
     public PageResponse<BookingResponse> getMyBookings(Long userId, int page, int size) {
         Page<Booking> bookings = bookingRepository.findByUserId(userId,
-                PageRequest.of(page, size, Sort.by("bookingTime").descending()));
+                PageRequest.of(page, size, Sort.by("bookingDate").descending()));
         return PageResponse.<BookingResponse>builder()
                 .content(bookings.getContent().stream().map(bookingMapper::toResponse).collect(Collectors.toList()))
                 .page(bookings.getNumber())
@@ -172,7 +172,7 @@ public class BookingServiceImpl implements BookingService {
         for (BookingDetail detail : booking.getBookingDetails()) {
             TicketCategory tc = detail.getTicketCategory();
             tc.setSoldQuantity(tc.getSoldQuantity() - detail.getQuantity());
-            tc.setAvailableQuantity(tc.getAvailableQuantity() + detail.getQuantity());
+            tc.setRemainingQuantity(tc.getRemainingQuantity() + detail.getQuantity());
             ticketCategoryRepository.save(tc);
         }
 
@@ -183,7 +183,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<BookingResponse> getAllBookings(int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("bookingTime").descending());
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("bookingDate").descending());
         Page<Booking> bookings;
 
         if (securityUtils.isCurrentUserManager()) {
@@ -210,6 +210,6 @@ public class BookingServiceImpl implements BookingService {
         if (!booking.getUser().getId().equals(userId)) {
             throw new BadRequestException("Bạn không có quyền xem mã QR này");
         }
-        return booking.getQrCode();
+        return booking.getQrTicketUrl();
     }
 }

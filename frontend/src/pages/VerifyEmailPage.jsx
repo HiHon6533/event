@@ -55,41 +55,42 @@ export default function VerifyEmailPage() {
   if (!email) return null;
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-      <div className="bg-slate-800 p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-700">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-brand-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FiMail className="w-8 h-8 text-brand-400" />
+    <div className="auth-page">
+      <div className="auth-card slide-up">
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ width: 64, height: 64, background: 'rgba(56, 189, 248, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+            <FiMail style={{ width: 32, height: 32, color: 'var(--primary-light)' }} />
           </div>
-          <h2 className="text-2xl font-bold font-heading text-white mb-2">Xác thực Email</h2>
-          <p className="text-slate-400 text-sm">
+          <h1>Xác thực Email</h1>
+          <p>
             Chúng tôi đã gửi mã xác thực gồm 6 chữ số đến<br />
-            <strong className="text-slate-300">{email}</strong>
+            <strong>{email}</strong>
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex gap-3 text-red-500">
-            <FiAlertCircle className="w-5 h-5 shrink-0" />
-            <p className="text-sm">{error}</p>
+          <div style={{ marginBottom: '1.5rem', padding: '1rem', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', display: 'flex', gap: '0.75rem', color: 'var(--danger)', alignItems: 'center' }}>
+            <FiAlertCircle size={20} style={{ flexShrink: 0 }} />
+            <p style={{ margin: 0, fontSize: '0.9rem' }}>{error}</p>
           </div>
         )}
 
         {message && (
-          <div className="mb-6 p-4 rounded-xl bg-green-500/10 border border-green-500/20 flex gap-3 text-green-500">
-            <FiCheckCircle className="w-5 h-5 shrink-0" />
-            <p className="text-sm">{message}</p>
+          <div style={{ marginBottom: '1.5rem', padding: '1rem', borderRadius: '12px', background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.2)', display: 'flex', gap: '0.75rem', color: 'var(--success)', alignItems: 'center' }}>
+            <FiCheckCircle size={20} style={{ flexShrink: 0 }} />
+            <p style={{ margin: 0, fontSize: '0.9rem' }}>{message}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">Mã OTP</label>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Mã OTP</label>
             <input
               type="text"
               value={otpCode}
               onChange={(e) => setOtpCode(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 text-center tracking-[0.5em] text-xl font-bold focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all placeholder:tracking-normal placeholder:font-normal placeholder:text-base"
+              className="form-input"
+              style={{ textAlign: 'center', letterSpacing: '0.5em', fontSize: '1.25rem', fontWeight: 'bold' }}
               placeholder="Nhập 6 số"
               maxLength="6"
               required
@@ -99,18 +100,19 @@ export default function VerifyEmailPage() {
           <button
             type="submit"
             disabled={loading || otpCode.length !== 6}
-            className="w-full py-3.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn btn-primary"
+            style={{ width: '100%' }}
           >
             {loading ? 'Đang xác thực...' : 'Xác thực tài khoản'}
           </button>
         </form>
 
-        <div className="mt-8 text-center text-sm text-slate-400">
+        <div className="auth-footer" style={{ marginTop: '2rem' }}>
           Chưa nhận được mã?{' '}
           <button
             onClick={handleResend}
             disabled={resending}
-            className="text-brand-400 hover:text-brand-300 font-medium transition-colors disabled:opacity-50"
+            style={{ background: 'none', border: 'none', color: 'var(--primary-light)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 'bold' }}
           >
             {resending ? 'Đang gửi...' : 'Gửi lại OTP'}
           </button>

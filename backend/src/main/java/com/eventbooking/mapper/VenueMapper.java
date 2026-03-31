@@ -26,6 +26,7 @@ public class VenueMapper {
                 .phone(venue.getPhone())
                 .totalCapacity(venue.getTotalCapacity())
                 .imageUrl(venue.getImageUrl())
+                .seatMapImage(venue.getSeatMapImage())
                 .description(venue.getDescription())
                 .isActive(venue.getIsActive())
                 .zones(venue.getZones() != null
@@ -44,6 +45,7 @@ public class VenueMapper {
                 .phone(venue.getPhone())
                 .totalCapacity(venue.getTotalCapacity())
                 .imageUrl(venue.getImageUrl())
+                .seatMapImage(venue.getSeatMapImage())
                 .description(venue.getDescription())
                 .isActive(venue.getIsActive())
                 .createdAt(venue.getCreatedAt())

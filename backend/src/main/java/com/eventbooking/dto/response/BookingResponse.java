@@ -22,9 +22,9 @@ public class BookingResponse {
     private Integer totalTickets;
     private BigDecimal totalAmount;
     private BookingStatus status;
-    private String qrCode;
+    private String qrTicketUrl;
     private String note;
-    private LocalDateTime bookingTime;
+    private LocalDateTime bookingDate;
     private List<BookingDetailResponse> bookingDetails;
     private PaymentResponse payment;
     private LocalDateTime createdAt;

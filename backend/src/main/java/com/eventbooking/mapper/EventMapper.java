@@ -13,10 +13,12 @@ public class EventMapper {
 
     private final VenueMapper venueMapper;
     private final TicketCategoryMapper ticketCategoryMapper;
+    private final ZoneMapper zoneMapper;
 
-    public EventMapper(VenueMapper venueMapper, TicketCategoryMapper ticketCategoryMapper) {
+    public EventMapper(VenueMapper venueMapper, TicketCategoryMapper ticketCategoryMapper, ZoneMapper zoneMapper) {
         this.venueMapper = venueMapper;
         this.ticketCategoryMapper = ticketCategoryMapper;
+        this.zoneMapper = zoneMapper;
     }
 
     /** Lightweight response for list views */
@@ -61,6 +63,13 @@ public class EventMapper {
                 .ticketCategories(event.getTicketCategories() != null
                         ? event.getTicketCategories().stream()
                             .map(ticketCategoryMapper::toResponse)
+                            .collect(Collectors.toList())
+                        : Collections.emptyList())
+                .zones(event.getVenue() != null && event.getVenue().getZones() != null
+                        ? event.getVenue().getZones().stream()
+                            .filter(z -> Boolean.TRUE.equals(z.getIsActive()))
+                            .sorted((a, b) -> Integer.compare(a.getSortOrder(), b.getSortOrder()))
+                            .map(zoneMapper::toResponse)
                             .collect(Collectors.toList())
                         : Collections.emptyList())
                 .createdAt(event.getCreatedAt())

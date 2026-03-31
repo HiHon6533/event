@@ -27,5 +27,6 @@ public class EventDetailResponse {
     private Long managerId;
     private String managerName;
     private List<TicketCategoryResponse> ticketCategories;
+    private List<ZoneResponse> zones;
     private LocalDateTime createdAt;
 }

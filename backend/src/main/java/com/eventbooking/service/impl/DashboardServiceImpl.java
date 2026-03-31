@@ -97,9 +97,9 @@ public class DashboardServiceImpl implements DashboardService {
 
         // Group by day using TreeMap to keep them sorted
         Map<LocalDate, BigDecimal> revenueByDay = recentConfirmedBookings.stream()
-                .filter(b -> b.getBookingTime() != null)
+                .filter(b -> b.getBookingDate() != null)
                 .collect(Collectors.groupingBy(
-                        b -> b.getBookingTime().toLocalDate(),
+                        b -> b.getBookingDate().toLocalDate(),
                         TreeMap::new,
                         Collectors.reducing(BigDecimal.ZERO, Booking::getTotalAmount, BigDecimal::add)
                 ));

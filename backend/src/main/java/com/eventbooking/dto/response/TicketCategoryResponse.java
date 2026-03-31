@@ -19,7 +19,7 @@ public class TicketCategoryResponse {
     private BigDecimal price;
     private Integer totalQuantity;
     private Integer soldQuantity;
-    private Integer availableQuantity;
+    private Integer remainingQuantity;
     private Integer maxPerBooking;
     private TicketStatus status;
 }
