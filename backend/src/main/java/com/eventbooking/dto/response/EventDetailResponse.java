@@ -19,6 +19,8 @@ public class EventDetailResponse {
     private EventCategory category;
     private String bannerUrl;
     private String thumbnailUrl;
+    private String imageUrl;
+    private String mapUrl;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private EventStatus status;

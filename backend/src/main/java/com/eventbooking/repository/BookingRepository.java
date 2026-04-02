@@ -25,6 +25,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     Page<Booking> findByEventId(Long eventId, Pageable pageable);
 
+    List<Booking> findByEventIdAndStatusIn(Long eventId, List<BookingStatus> statuses);
+
     List<Booking> findByStatus(BookingStatus status);
 
     @Query("SELECT COALESCE(SUM(b.totalAmount), 0) FROM Booking b WHERE b.status = 'CONFIRMED'")

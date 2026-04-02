@@ -32,6 +32,9 @@ public class EventController {
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            eventService.logSearchKeyword(keyword);
+        }
         return ResponseEntity.ok(eventService.getPublishedEvents(category, keyword, page, size));
     }
 
@@ -39,6 +42,25 @@ public class EventController {
     @GetMapping("/featured")
     public ResponseEntity<List<EventResponse>> getFeaturedEvents() {
         return ResponseEntity.ok(eventService.getFeaturedEvents());
+    }
+
+    /** Public: get search suggestions */
+    @GetMapping("/search-suggestions")
+    public ResponseEntity<List<String>> getSearchSuggestions() {
+        return ResponseEntity.ok(eventService.getSearchSuggestions());
+    }
+
+    /** Public: get all events (any status) */
+    @GetMapping("/all")
+    public ResponseEntity<PageResponse<EventResponse>> getAllEventsPublic(
+            @RequestParam(required = false) EventCategory category,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            eventService.logSearchKeyword(keyword);
+        }
+        return ResponseEntity.ok(eventService.getAllEventsPublic(category, keyword, page, size));
     }
 
     /** Public: get event detail */

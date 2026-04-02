@@ -19,6 +19,7 @@ com\eventbooking\dto\response\AuthResponse.class
 com\eventbooking\repository\PaymentRepository.class
 com\eventbooking\dto\response\TicketCategoryResponse$TicketCategoryResponseBuilder.class
 com\eventbooking\dto\response\TicketCategoryResponse.class
+com\eventbooking\repository\SearchHistoryRepository.class
 com\eventbooking\dto\response\EventResponse$EventResponseBuilder.class
 com\eventbooking\dto\response\AuthResponse$AuthResponseBuilder.class
 com\eventbooking\dto\response\PageResponse$PageResponseBuilder.class
@@ -45,6 +46,7 @@ com\eventbooking\service\VNPayService.class
 com\eventbooking\entity\Seat$SeatBuilder.class
 com\eventbooking\service\impl\UserServiceImpl.class
 com\eventbooking\dto\response\UserResponse$UserResponseBuilder.class
+com\eventbooking\service\QRCodeService.class
 com\eventbooking\controller\UserController.class
 com\eventbooking\controller\BookingController.class
 com\eventbooking\controller\EventController.class
@@ -60,6 +62,7 @@ com\eventbooking\entity\Seat.class
 com\eventbooking\entity\Ticket.class
 com\eventbooking\repository\BookingRepository.class
 com\eventbooking\service\EventService.class
+com\eventbooking\service\FileStorageService.class
 com\eventbooking\entity\Zone.class
 com\eventbooking\entity\Booking.class
 com\eventbooking\dto\response\DashboardResponse$DashboardResponseBuilder.class
@@ -81,6 +84,7 @@ com\eventbooking\dto\request\ZoneRequest.class
 com\eventbooking\security\SecurityUtils.class
 com\eventbooking\entity\enums\TicketStatus.class
 com\eventbooking\repository\EventRepository.class
+com\eventbooking\entity\SearchHistory.class
 com\eventbooking\dto\response\BookingResponse$BookingResponseBuilder.class
 com\eventbooking\entity\Payment$PaymentBuilder.class
 com\eventbooking\entity\Venue$VenueBuilder.class
@@ -112,6 +116,7 @@ com\eventbooking\dto\response\VenueResponse.class
 com\eventbooking\exception\GlobalExceptionHandler.class
 com\eventbooking\dto\response\DailyRevenueResponse$DailyRevenueResponseBuilder.class
 com\eventbooking\controller\PaymentController.class
+com\eventbooking\controller\CheckInController.class
 com\eventbooking\exception\ResourceNotFoundException.class
 com\eventbooking\entity\User$UserBuilder.class
 com\eventbooking\mapper\TicketCategoryMapper.class
@@ -129,7 +134,10 @@ com\eventbooking\dto\response\DashboardResponse.class
 com\eventbooking\entity\TicketCategory$TicketCategoryBuilder.class
 com\eventbooking\entity\enums\EventStatus.class
 com\eventbooking\entity\Event.class
+com\eventbooking\config\WebConfig.class
+com\eventbooking\entity\SearchHistory$SearchHistoryBuilder.class
 com\eventbooking\service\AuthService.class
 com\eventbooking\entity\Event$EventBuilder.class
 com\eventbooking\security\SecurityConfig.class
+com\eventbooking\controller\ImageUploadController.class
 com\eventbooking\repository\SeatRepository.class

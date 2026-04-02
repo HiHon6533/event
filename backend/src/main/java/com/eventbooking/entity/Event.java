@@ -52,6 +52,9 @@ public class Event {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "map_url")
+    private String mapUrl;
+
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 

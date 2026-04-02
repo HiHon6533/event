@@ -42,7 +42,9 @@ export const authApi = {
 // ── Events ─────────────────────────────────────
 export const eventApi = {
   getPublished: (params) => api.get('/events', { params }),
+  getAllPublic: (params) => api.get('/events/all', { params }),
   getFeatured: () => api.get('/events/featured'),
+  getSearchSuggestions: () => api.get('/events/search-suggestions'),
   getById: (id) => api.get(`/events/${id}`),
   create: (data) => api.post('/events', data),
   update: (id, data) => api.put(`/events/${id}`, data),
