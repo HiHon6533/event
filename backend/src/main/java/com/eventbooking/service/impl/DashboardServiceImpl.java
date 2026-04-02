@@ -5,9 +5,12 @@ import com.eventbooking.dto.response.DashboardResponse;
 import com.eventbooking.dto.response.DailyRevenueResponse;
 import com.eventbooking.entity.Booking;
 import com.eventbooking.entity.enums.BookingStatus;
+import com.eventbooking.entity.enums.EventStatus;
+import com.eventbooking.entity.enums.OrganizerRequestStatus;
 import com.eventbooking.mapper.BookingMapper;
 import com.eventbooking.repository.BookingRepository;
 import com.eventbooking.repository.EventRepository;
+import com.eventbooking.repository.OrganizerRegistrationRepository;
 import com.eventbooking.repository.UserRepository;
 import com.eventbooking.service.DashboardService;
 import org.springframework.data.domain.PageRequest;
@@ -31,15 +34,19 @@ public class DashboardServiceImpl implements DashboardService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final BookingRepository bookingRepository;
+    private final OrganizerRegistrationRepository organizerRegistrationRepository;
     private final BookingMapper bookingMapper;
     private final SecurityUtils securityUtils;
 
     public DashboardServiceImpl(UserRepository userRepository, EventRepository eventRepository,
-                               BookingRepository bookingRepository, BookingMapper bookingMapper,
+                               BookingRepository bookingRepository,
+                               OrganizerRegistrationRepository organizerRegistrationRepository,
+                               BookingMapper bookingMapper,
                                SecurityUtils securityUtils) {
         this.userRepository = userRepository;
         this.eventRepository = eventRepository;
         this.bookingRepository = bookingRepository;
+        this.organizerRegistrationRepository = organizerRegistrationRepository;
         this.bookingMapper = bookingMapper;
         this.securityUtils = securityUtils;
     }
@@ -52,6 +59,8 @@ public class DashboardServiceImpl implements DashboardService {
         long totalBookings;
         long confirmedBookings;
         long cancelledBookings;
+        long pendingEvents = 0;
+        long pendingOrganizerRequests = 0;
         BigDecimal totalRevenue;
         BigDecimal monthlyRevenue;
         List<BookingResponse> recentBookings;
@@ -77,11 +86,14 @@ public class DashboardServiceImpl implements DashboardService {
                     .collect(Collectors.toList());
             recentConfirmedBookings = bookingRepository.findConfirmedBookingsSinceByManagerId(thirtyDaysAgo, managerId);
         } else {
+            // Admin sees everything
             totalUsers = userRepository.count();
             totalEvents = eventRepository.count();
             totalBookings = bookingRepository.count();
             confirmedBookings = bookingRepository.countByStatus(BookingStatus.CONFIRMED);
             cancelledBookings = bookingRepository.countByStatus(BookingStatus.CANCELLED);
+            pendingEvents = eventRepository.countByStatus(EventStatus.PENDING_REVIEW);
+            pendingOrganizerRequests = organizerRegistrationRepository.countByStatus(OrganizerRequestStatus.PENDING);
             totalRevenue = bookingRepository.getTotalRevenue();
             monthlyRevenue = bookingRepository.getRevenueBetween(startOfMonth, LocalDateTime.now());
             recentBookings = bookingRepository.findAllByOrderByCreatedAtDesc(
@@ -124,6 +136,8 @@ public class DashboardServiceImpl implements DashboardService {
                 .totalBookings(totalBookings)
                 .confirmedBookings(confirmedBookings)
                 .cancelledBookings(cancelledBookings)
+                .pendingEvents(pendingEvents)
+                .pendingOrganizerRequests(pendingOrganizerRequests)
                 .totalRevenue(totalRevenue)
                 .monthlyRevenue(monthlyRevenue)
                 .dailyRevenues(dailyRevenues)

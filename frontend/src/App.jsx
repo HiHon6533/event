@@ -7,6 +7,8 @@ import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import RegisterOrganizerPage from './pages/RegisterOrganizerPage';
+import ProfilePage from './pages/ProfilePage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import BookingDetailPage from './pages/BookingDetailPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
@@ -18,6 +20,7 @@ import AdminEventsPage from './pages/admin/AdminEventsPage';
 import AdminBookingsPage from './pages/admin/AdminBookingsPage';
 import AdminVenuesPage from './pages/admin/AdminVenuesPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminOrganizerRequestsPage from './pages/admin/AdminOrganizerRequestsPage';
 import './index.css';
 
 function PrivateRoute({ children }) {
@@ -39,6 +42,8 @@ function App() {
           {/* Auth pages (no navbar/footer) */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register-organizer" element={<PrivateRoute><RegisterOrganizerPage /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -60,6 +65,7 @@ function App() {
             <Route path="bookings" element={<AdminBookingsPage />} />
             <Route path="venues" element={<AdminVenuesPage />} />
             <Route path="users" element={<AdminUsersPage />} />
+            <Route path="organizer-requests" element={<AdminOrganizerRequestsPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" />} />

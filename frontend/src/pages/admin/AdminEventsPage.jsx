@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { eventApi, venueApi } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 import { formatDateTime, CATEGORY_LABELS, STATUS_LABELS, STATUS_COLORS } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
 export default function AdminEventsPage() {
+  const { isAdmin, isManager } = useAuth();
   const [events, setEvents] = useState([]);
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +20,7 @@ export default function AdminEventsPage() {
     title: '',
     shortDescription: '',
     description: '',
-    category: 'MUSIC',
+    category: 'CONCERT',
     startTime: '',
     endTime: '',
     bannerUrl: '',
@@ -60,7 +62,7 @@ export default function AdminEventsPage() {
         title: event.title || '',
         shortDescription: event.shortDescription || '',
         description: event.description || '',
-        category: event.category || 'MUSIC',
+        category: event.category || 'CONCERT',
         startTime: formatForInput(event.startTime),
         endTime: formatForInput(event.endTime),
         bannerUrl: event.bannerUrl || '',
@@ -75,7 +77,7 @@ export default function AdminEventsPage() {
         title: '',
         shortDescription: '',
         description: '',
-        category: 'MUSIC',
+        category: 'CONCERT',
         startTime: '',
         endTime: '',
         bannerUrl: '',
@@ -94,7 +96,7 @@ export default function AdminEventsPage() {
         toast.success('Cập nhật sự kiện thành công');
       } else {
         await eventApi.create(formData);
-        toast.success('Tạo sự kiện thành công');
+        toast.success(isManager ? 'Tạo sự kiện thành công! Đang chờ Admin duyệt.' : 'Tạo sự kiện thành công');
       }
       setIsModalOpen(false);
       loadData();
@@ -104,21 +106,54 @@ export default function AdminEventsPage() {
   };
 
   const handleStatusChange = async (id, status) => {
+    const messages = {
+      PUBLISHED: 'Bạn có chắc chắn xuất bản sự kiện này?',
+      CANCELLED: 'Bạn có chắc chắn hủy sự kiện này? Người đã đặt vé sẽ nhận email thông báo.',
+      DRAFT: 'Chuyển sự kiện về trạng thái nháp?',
+    };
     try {
-      if (window.confirm('Bạn có chắc chắn chuyển trạng thái sự kiện này?')) {
+      if (window.confirm(messages[status] || 'Bạn có chắc chắn?')) {
         await eventApi.updateStatus(id, status);
         toast.success('Cập nhật trạng thái thành công');
         loadData();
       }
     } catch (err) {
-      toast.error('Cập nhật thất bại');
+      toast.error(err.response?.data?.message || 'Cập nhật thất bại');
     }
+  };
+
+  // Determine which status actions are available based on role and current status
+  const getStatusActions = (event) => {
+    const actions = [];
+    
+    if (isAdmin) {
+      if (event.status === 'DRAFT' || event.status === 'PENDING_REVIEW') {
+        actions.push({ label: '✅ Duyệt & Xuất bản', status: 'PUBLISHED', color: '#27ae60' });
+      }
+      if (event.status === 'PUBLISHED') {
+        actions.push({ label: '❌ Hủy sự kiện', status: 'CANCELLED', color: '#e74c3c' });
+      }
+      if (event.status === 'PENDING_REVIEW') {
+        actions.push({ label: '↩ Trả về nháp', status: 'DRAFT', color: '#95a5a6' });
+      }
+    }
+    
+    if (isManager) {
+      if (event.status === 'DRAFT' || event.status === 'PENDING_REVIEW') {
+        actions.push({ label: '❌ Hủy', status: 'CANCELLED', color: '#e74c3c' });
+      }
+    }
+    
+    return actions;
   };
 
   return (
     <>
       <div className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>📅 Quản lý sự kiện</h1>
+        <div>
+          <h1>📅 {isManager ? 'Sự kiện của tôi' : 'Quản lý Sự kiện'}</h1>
+          {isManager && <p style={{ color: 'var(--text-muted)', margin: '4px 0 0', fontSize: '0.9rem' }}>Sự kiện bạn tạo sẽ được Admin duyệt trước khi xuất bản</p>}
+        </div>
         <button className="btn btn-primary" onClick={() => openModal()}>+ Tạo sự kiện</button>
       </div>
 
@@ -127,15 +162,30 @@ export default function AdminEventsPage() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>ID</th><th>Tên sự kiện</th><th>Thể loại</th><th>Thời gian</th><th>Trạng thái</th><th>Thao tác</th>
+                <th>ID</th><th>Tên sự kiện</th><th>Thể loại</th>
+                {isAdmin && <th>Ban tổ chức</th>}
+                <th>Thời gian</th><th>Trạng thái</th><th>Thao tác</th>
               </tr>
             </thead>
             <tbody>
-              {events.map(e => (
+              {events.length === 0 ? (
+                <tr><td colSpan={isAdmin ? 7 : 6} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                  {isManager ? 'Bạn chưa tạo sự kiện nào' : 'Chưa có sự kiện nào'}
+                </td></tr>
+              ) : events.map(e => (
                 <tr key={e.id}>
                   <td>{e.id}</td>
                   <td style={{ fontWeight: 600, maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.title}</td>
                   <td>{CATEGORY_LABELS[e.category] || e.category}</td>
+                  {isAdmin && (
+                    <td>
+                      {e.managerName ? (
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>🏢 {e.managerName}</span>
+                      ) : (
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>— Admin</span>
+                      )}
+                    </td>
+                  )}
                   <td style={{ fontSize: '0.85rem' }}>{formatDateTime(e.startTime)}</td>
                   <td>
                     <span className="badge" style={{ background: STATUS_COLORS[e.status] || '#95a5a6', color: 'white' }}>
@@ -143,15 +193,17 @@ export default function AdminEventsPage() {
                     </span>
                   </td>
                   <td>
-                    <div className="actions" style={{ display: 'flex', gap: '8px' }}>
-                      <button className="btn btn-sm" style={{ background: '#0984e3', color: '#fff'}} onClick={() => openModal(e)}>Sửa</button>
+                    <div className="actions" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      {/* Edit: only for DRAFT/PENDING_REVIEW */}
+                      {(e.status === 'DRAFT' || e.status === 'PENDING_REVIEW') && (
+                        <button className="btn btn-sm" style={{ background: '#0984e3', color: '#fff'}} onClick={() => openModal(e)}>Sửa</button>
+                      )}
                       
-                      {e.status === 'DRAFT' && (
-                        <button className="btn btn-sm btn-primary" onClick={() => handleStatusChange(e.id, 'PUBLISHED')}>Xuất bản</button>
-                      )}
-                      {e.status === 'PUBLISHED' && (
-                        <button className="btn btn-sm btn-danger" onClick={() => handleStatusChange(e.id, 'CANCELLED')}>Hủy</button>
-                      )}
+                      {getStatusActions(e).map((action, idx) => (
+                        <button key={idx} className="btn btn-sm" style={{ background: action.color, color: '#fff' }} onClick={() => handleStatusChange(e.id, action.status)}>
+                          {action.label}
+                        </button>
+                      ))}
                     </div>
                   </td>
                 </tr>
@@ -165,7 +217,10 @@ export default function AdminEventsPage() {
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', width: '90%', maxWidth: '650px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)' }}>
             <div style={{ padding: '24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'var(--bg-card)', zIndex: 10 }}>
-              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>{isEditMode ? 'Sửa sự kiện' : 'Tạo sự kiện mới'}</h2>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>{isEditMode ? 'Sửa sự kiện' : 'Tạo sự kiện mới'}</h2>
+                {isManager && !isEditMode && <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#e67e22' }}>⏳ Sự kiện sẽ ở trạng thái "Chờ duyệt" sau khi tạo</p>}
+              </div>
               <button style={{ background: 'var(--bg-lighter)', border: 'none', color: 'var(--text-secondary)', fontSize: '1.2rem', cursor: 'pointer', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setIsModalOpen(false)}>&times;</button>
             </div>
             
@@ -222,10 +277,13 @@ export default function AdminEventsPage() {
                 </div>
               </div>
 
-              <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }}>
-                <input type="checkbox" id="isFeatured" checked={formData.isFeatured} onChange={e => setFormData({...formData, isFeatured: e.target.checked})} style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
-                <label htmlFor="isFeatured" style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>Đánh dấu là "Sự kiện nổi bật" (🔥 Hot)</label>
-              </div>
+              {/* Featured checkbox: Admin only */}
+              {isAdmin && (
+                <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }}>
+                  <input type="checkbox" id="isFeatured" checked={formData.isFeatured} onChange={e => setFormData({...formData, isFeatured: e.target.checked})} style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
+                  <label htmlFor="isFeatured" style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>Đánh dấu là "Sự kiện nổi bật" (🔥 Hot)</label>
+                </div>
+              )}
 
               <div style={{ padding: '16px 0 0 0', display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid var(--border)' }}>
                 <button type="button" className="btn btn-secondary" style={{ padding: '10px 20px', background: 'var(--bg-lighter)', borderRadius: '8px', border: 'none', color: '#fff', cursor: 'pointer' }} onClick={() => setIsModalOpen(false)}>Hủy</button>

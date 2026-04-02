@@ -15,6 +15,8 @@ public class DashboardResponse {
     private long totalBookings;
     private long confirmedBookings;
     private long cancelledBookings;
+    private long pendingEvents;
+    private long pendingOrganizerRequests;
     private BigDecimal totalRevenue;
     private BigDecimal monthlyRevenue;
     private List<DailyRevenueResponse> dailyRevenues;

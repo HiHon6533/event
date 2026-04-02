@@ -20,11 +20,13 @@ com\eventbooking\repository\PaymentRepository.class
 com\eventbooking\dto\response\TicketCategoryResponse$TicketCategoryResponseBuilder.class
 com\eventbooking\dto\response\TicketCategoryResponse.class
 com\eventbooking\repository\SearchHistoryRepository.class
+com\eventbooking\entity\enums\OrganizerRequestStatus.class
 com\eventbooking\dto\response\EventResponse$EventResponseBuilder.class
 com\eventbooking\dto\response\AuthResponse$AuthResponseBuilder.class
 com\eventbooking\dto\response\PageResponse$PageResponseBuilder.class
 com\eventbooking\service\impl\AuthServiceImpl.class
 com\eventbooking\dto\request\ResetPasswordRequest.class
+com\eventbooking\dto\response\OrganizerRegistrationResponse.class
 com\eventbooking\controller\VenueController.class
 com\eventbooking\service\EmailService.class
 com\eventbooking\service\impl\PaymentServiceImpl.class
@@ -36,6 +38,7 @@ com\eventbooking\service\VenueService.class
 com\eventbooking\service\TicketCategoryService.class
 com\eventbooking\entity\BookingDetail$BookingDetailBuilder.class
 com\eventbooking\service\impl\DashboardServiceImpl.class
+com\eventbooking\entity\OrganizerRegistration.class
 com\eventbooking\repository\VenueRepository.class
 com\eventbooking\entity\BookingDetail.class
 com\eventbooking\dto\response\PaymentResponse.class
@@ -74,6 +77,7 @@ com\eventbooking\controller\TicketController.class
 com\eventbooking\EventBookingApplication.class
 com\eventbooking\dto\request\TicketCategoryRequest.class
 com\eventbooking\dto\response\VenueResponse$VenueResponseBuilder.class
+com\eventbooking\dto\response\OrganizerRegistrationResponse$OrganizerRegistrationResponseBuilder.class
 com\eventbooking\entity\Ticket$TicketBuilder.class
 com\eventbooking\entity\enums\PaymentStatus.class
 com\eventbooking\dto\response\TicketResponse.class
@@ -88,6 +92,7 @@ com\eventbooking\entity\SearchHistory.class
 com\eventbooking\dto\response\BookingResponse$BookingResponseBuilder.class
 com\eventbooking\entity\Payment$PaymentBuilder.class
 com\eventbooking\entity\Venue$VenueBuilder.class
+com\eventbooking\repository\OrganizerRegistrationRepository.class
 com\eventbooking\exception\DuplicateResourceException.class
 com\eventbooking\dto\response\PaymentResponse$PaymentResponseBuilder.class
 com\eventbooking\config\VNPayConfig.class
@@ -99,6 +104,7 @@ com\eventbooking\service\PaymentService.class
 com\eventbooking\mapper\EventMapper.class
 com\eventbooking\dto\response\TicketResponse$TicketResponseBuilder.class
 com\eventbooking\service\BookingService.class
+com\eventbooking\dto\request\OrganizerRequest.class
 com\eventbooking\repository\UserRepository.class
 com\eventbooking\dto\request\BookingDetailRequest.class
 com\eventbooking\entity\enums\BookingStatus.class
@@ -141,3 +147,4 @@ com\eventbooking\entity\Event$EventBuilder.class
 com\eventbooking\security\SecurityConfig.class
 com\eventbooking\controller\ImageUploadController.class
 com\eventbooking\repository\SeatRepository.class
+com\eventbooking\entity\OrganizerRegistration$OrganizerRegistrationBuilder.class
