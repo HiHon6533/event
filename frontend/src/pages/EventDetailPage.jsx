@@ -4,6 +4,7 @@ import { eventApi, bookingApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { formatCurrency, formatDateTime, formatDate, CATEGORY_LABELS, CATEGORY_COLORS } from '../utils/helpers';
 import { HiCalendar, HiLocationMarker, HiMinus, HiPlus, HiChevronDown, HiChevronRight } from 'react-icons/hi';
+import EventCard from '../components/EventCard';
 import toast from 'react-hot-toast';
 
 export default function EventDetailPage() {
@@ -16,10 +17,27 @@ export default function EventDetailPage() {
   const [booking, setBooking] = useState(false);
   const [expandedTc, setExpandedTc] = useState(null);
   const [mapExpanded, setMapExpanded] = useState(false);
+  const [relatedEvents, setRelatedEvents] = useState([]);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+    setRelatedEvents([]);
     eventApi.getById(id)
-      .then(res => setEvent(res.data))
+      .then(res => {
+        setEvent(res.data);
+        // Fetch related events by same category
+        const ev = res.data;
+        if (ev?.category) {
+          eventApi.getPublished({ category: ev.category, size: 10 })
+            .then(r => {
+              const now = new Date();
+              const items = (r.data?.content || [])
+                .filter(e => e.id !== ev.id && new Date(e.endTime) >= now)
+                .slice(0, 4);
+              setRelatedEvents(items);
+            }).catch(() => {});
+        }
+      })
       .catch(() => toast.error('Không tìm thấy sự kiện'))
       .finally(() => setLoading(false));
   }, [id]);
@@ -39,12 +57,18 @@ export default function EventDetailPage() {
   const totalTickets = Object.values(quantities).reduce((s, q) => s + q, 0);
 
   const handleBooking = async () => {
-    if (!user) { navigate('/login'); return; }
     if (totalTickets === 0) { toast.error('Vui lòng chọn ít nhất 1 vé'); return; }
 
     const items = Object.entries(quantities)
       .filter(([, qty]) => qty > 0)
       .map(([tcId, quantity]) => ({ ticketCategoryId: parseInt(tcId), quantity }));
+
+    if (!user) { 
+      toast.error('Hãy đăng nhập để đặt vé!');
+      sessionStorage.setItem('pendingBooking', JSON.stringify({ eventId: parseInt(id), items }));
+      navigate('/login');
+      return; 
+    }
 
     setBooking(true);
     try {
@@ -166,12 +190,13 @@ export default function EventDetailPage() {
 
             {/* Right: Event Image (poster style) */}
             <div className="tb-ticket-image">
-              <img src={event.imageUrl || event.bannerUrl || event.thumbnailUrl} alt={event.title} />
-              <div className="tb-ticket-image-overlay">
-                <span className="badge" style={{ background: CATEGORY_COLORS[event.category], color: 'white', fontSize: '0.85rem', padding: '6px 16px' }}>
-                  {CATEGORY_LABELS[event.category]}
-                </span>
-              </div>
+              <img 
+                src={event.imageUrl || event.bannerUrl || event.thumbnailUrl} 
+                alt={event.title} 
+                onClick={() => document.getElementById('tb-schedule')?.scrollIntoView({ behavior: 'smooth' })}
+                style={{ cursor: 'pointer' }}
+                title="Bấm để cuộn xuống xem Lịch diễn và Mua vé"
+              />
             </div>
 
             {/* Ticket perforation effect */}
@@ -247,7 +272,7 @@ export default function EventDetailPage() {
           </div>
           <div className="tb-section-body">
             {/* Schedule row */}
-            <div className="tb-schedule-row">
+            <div className="tb-schedule-row" style={{ marginBottom: '24px' }}>
               <div className="tb-schedule-info">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <HiChevronDown size={20} color="var(--text-muted)" />
@@ -261,6 +286,77 @@ export default function EventDetailPage() {
                 {scheduleBadge}
               </div>
             </div>
+
+            {/* Calendar Widget */}
+            {(() => {
+              const startYear = startDate.getFullYear();
+              const startMonth = startDate.getMonth();
+              const firstDay = new Date(startYear, startMonth, 1);
+              const lastDay = new Date(startYear, startMonth + 1, 0);
+              
+              // Map Sunday (0) -> 6, Monday (1) -> 0
+              let startDayOfWeek = firstDay.getDay() - 1; 
+              if (startDayOfWeek === -1) startDayOfWeek = 6;
+              
+              const days = [];
+              const prevMonthDays = new Date(startYear, startMonth, 0).getDate();
+              
+              // Previous month padding
+              for (let i = startDayOfWeek - 1; i >= 0; i--) {
+                days.push({ id: `prev-${i}`, day: prevMonthDays - i, isCurrentMonth: false });
+              }
+              
+              // Current month days
+              const totalDays = lastDay.getDate();
+              const eventStartDay = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+              const eventEndDay = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+              
+              // Calculate number of event days in this month
+              let eventDaysCount = 0;
+              
+              for (let i = 1; i <= totalDays; i++) {
+                const thisDay = new Date(startYear, startMonth, i);
+                const hasEvent = thisDay >= eventStartDay && thisDay <= eventEndDay;
+                if (hasEvent) eventDaysCount++;
+                days.push({ id: `curr-${i}`, day: i, isCurrentMonth: true, hasEvent, isSelected: false }); // i === startDate.getDate() ? 
+              }
+              
+              // Next month padding
+              const remainingDays = (Math.ceil(days.length / 7) * 7) - days.length; 
+              for (let i = 1; i <= remainingDays; i++) {
+                days.push({ id: `next-${i}`, day: i, isCurrentMonth: false });
+              }
+              
+              return (
+                <div className="tb-calendar-container fade-in">
+                  <div className="tb-calendar-header">
+                    <span style={{ cursor: 'pointer', color: 'var(--text-muted)' }}>&lt;</span>
+                    <div className="tb-calendar-month-item active">
+                      <div style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--success)', marginBottom: '4px' }}>
+                        Tháng {startMonth + 1}, {startYear}
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--success)' }}>{eventDaysCount} suất diễn</div>
+                    </div>
+                    <span style={{ cursor: 'pointer', color: 'var(--text-muted)' }}>&gt;</span>
+                  </div>
+                  <div className="tb-calendar-weekdays">
+                    <div>Thứ 2</div><div>Thứ 3</div><div>Thứ 4</div>
+                    <div>Thứ 5</div><div>Thứ 6</div><div>Thứ 7</div>
+                    <div>Chủ nhật</div>
+                  </div>
+                  <div className="tb-calendar-grid">
+                    {days.map((item) => (
+                      <div 
+                        key={item.id} 
+                        className={`tb-calendar-day ${item.isCurrentMonth ? 'current-month' : ''} ${item.hasEvent ? 'has-event' : ''} ${item.isSelected ? 'is-selected' : ''}`}
+                      >
+                        {item.day.toString().padStart(2, '0')}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Thông tin vé */}
             <h3 style={{ fontWeight: 600, marginTop: '28px', marginBottom: '16px', fontSize: '1rem' }}>Thông tin vé</h3>
@@ -384,6 +480,23 @@ export default function EventDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* ═══ Có thể bạn cũng thích ═══ */}
+      {relatedEvents.length > 0 && (
+        <section className="related-events-section">
+          <div className="container">
+            <div className="related-events-header">
+              <span style={{ fontSize: '1.4rem' }}>💡</span>
+              <h2>Có thể bạn cũng thích</h2>
+            </div>
+            <div className="related-events-grid">
+              {relatedEvents.map(ev => (
+                <EventCard key={ev.id} event={ev} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Fullscreen map overlay */}
       {mapExpanded && seatMapUrl && (

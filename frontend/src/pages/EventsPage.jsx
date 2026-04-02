@@ -3,14 +3,13 @@ import { useSearchParams } from 'react-router-dom';
 import { eventApi } from '../services/api';
 import EventCard from '../components/EventCard';
 import { CATEGORY_LABELS } from '../utils/helpers';
-import { HiOutlineSearch } from 'react-icons/hi';
 
 export default function EventsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [events, setEvents] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [keyword, setKeyword] = useState(searchParams.get('keyword') || '');
+  const keyword = searchParams.get('keyword') || '';
   const category = searchParams.get('category') || '';
   const page = parseInt(searchParams.get('page') || '0');
 
@@ -23,12 +22,7 @@ export default function EventsPage() {
       .then(res => { setEvents(res.data.content); setTotalPages(res.data.totalPages); })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [category, page, searchParams]);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setSearchParams(prev => { prev.set('keyword', keyword); prev.set('page', '0'); return prev; });
-  };
+  }, [category, keyword, page, searchParams]);
 
   const handleCategory = (cat) => {
     setSearchParams(prev => {
@@ -41,16 +35,9 @@ export default function EventsPage() {
   return (
     <div className="container section fade-in">
       <h1 className="section-title">🎪 Tất cả sự kiện</h1>
-      <p className="section-subtitle">Khám phá và tìm sự kiện phù hợp với bạn</p>
-
-      {/* Search & Filter */}
-      <div style={{ display: 'flex', gap: 16, marginBottom: 32, flexWrap: 'wrap' }}>
-        <form onSubmit={handleSearch} style={{ display: 'flex', gap: 8, flex: 1, minWidth: 250 }}>
-          <input className="form-input" placeholder="Tìm kiếm sự kiện..." value={keyword}
-            onChange={e => setKeyword(e.target.value)} />
-          <button type="submit" className="btn btn-primary"><HiOutlineSearch /></button>
-        </form>
-      </div>
+      <p className="section-subtitle">
+        {keyword ? `Kết quả tìm kiếm cho "${keyword}"` : 'Khám phá và tìm sự kiện phù hợp với bạn'}
+      </p>
 
       {/* Category Pills */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 32 }}>

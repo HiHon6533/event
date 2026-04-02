@@ -22,6 +22,7 @@ public class EventResponse {
     private EventStatus status;
     private Boolean isFeatured;
     private Boolean isSoldOut;
+    private Double minPrice;
     private Long venueId;
     private String venueName;
     private String venueCity;
