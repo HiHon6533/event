@@ -24,6 +24,12 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                              @Param("category") EventCategory category,
                              @Param("keyword") String keyword,
                              Pageable pageable);
+    @Query("SELECT e FROM Event e WHERE " +
+           "(:category IS NULL OR e.category = :category) " +
+           "AND (:keyword IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<Event> searchAllEvents(@Param("category") EventCategory category,
+                                @Param("keyword") String keyword,
+                                Pageable pageable);
 
     List<Event> findByIsFeaturedTrueAndStatus(EventStatus status);
 

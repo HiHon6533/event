@@ -21,6 +21,7 @@ public class EventResponse {
     private LocalDateTime endTime;
     private EventStatus status;
     private Boolean isFeatured;
+    private Boolean isSoldOut;
     private Long venueId;
     private String venueName;
     private String venueCity;

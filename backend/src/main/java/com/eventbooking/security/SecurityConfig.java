@@ -37,10 +37,12 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/venues/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/tickets/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/payment/vnpay-return").permitAll()
+                .requestMatchers("/uploads/**").permitAll()
 
                 // Admin endpoints
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/dashboard/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/upload/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers(HttpMethod.POST, "/api/events/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/events/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/events/**").hasRole("ADMIN")

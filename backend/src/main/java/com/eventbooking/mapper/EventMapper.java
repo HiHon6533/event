@@ -23,6 +23,12 @@ public class EventMapper {
 
     /** Lightweight response for list views */
     public EventResponse toResponse(Event event) {
+        boolean isSoldOut = event.getTicketCategories() != null &&
+                            !event.getTicketCategories().isEmpty() &&
+                            event.getTicketCategories().stream()
+                                 .mapToInt(com.eventbooking.entity.TicketCategory::getRemainingQuantity)
+                                 .sum() <= 0;
+
         return EventResponse.builder()
                 .id(event.getId())
                 .title(event.getTitle())
@@ -34,6 +40,7 @@ public class EventMapper {
                 .endTime(event.getEndTime())
                 .status(event.getStatus())
                 .isFeatured(event.getIsFeatured())
+                .isSoldOut(isSoldOut)
                 .venueId(event.getVenue().getId())
                 .venueName(event.getVenue().getName())
                 .venueCity(event.getVenue().getCity())
@@ -53,6 +60,8 @@ public class EventMapper {
                 .category(event.getCategory())
                 .bannerUrl(event.getBannerUrl())
                 .thumbnailUrl(event.getThumbnailUrl())
+                .imageUrl(event.getImageUrl())
+                .mapUrl(event.getMapUrl())
                 .startTime(event.getStartTime())
                 .endTime(event.getEndTime())
                 .status(event.getStatus())
@@ -68,7 +77,11 @@ public class EventMapper {
                 .zones(event.getVenue() != null && event.getVenue().getZones() != null
                         ? event.getVenue().getZones().stream()
                             .filter(z -> Boolean.TRUE.equals(z.getIsActive()))
-                            .sorted((a, b) -> Integer.compare(a.getSortOrder(), b.getSortOrder()))
+                            .sorted((a, b) -> {
+                                Integer orderA = a.getSortOrder() != null ? a.getSortOrder() : 0;
+                                Integer orderB = b.getSortOrder() != null ? b.getSortOrder() : 0;
+                                return Integer.compare(orderA, orderB);
+                            })
                             .map(zoneMapper::toResponse)
                             .collect(Collectors.toList())
                         : Collections.emptyList())

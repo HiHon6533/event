@@ -19,7 +19,7 @@ export default function EventsPage() {
     const params = { page, size: 12 };
     if (category) params.category = category;
     if (keyword) params.keyword = keyword;
-    eventApi.getPublished(params)
+    eventApi.getAllPublic(params)
       .then(res => { setEvents(res.data.content); setTotalPages(res.data.totalPages); })
       .catch(() => {})
       .finally(() => setLoading(false));

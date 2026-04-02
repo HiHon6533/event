@@ -71,6 +71,48 @@ export default function EventDetailPage() {
   const isUpcoming = startDate > now;
   const isOngoing = !isEnded && !isUpcoming;
 
+  // Let's decide if the purchase is locked and what badges to show
+  let btnBadge = null;
+  let scheduleBadge = null;
+  let isPurchaseLocked = false;
+
+  // Check if ALL ticket categories are sold out
+  const totalRemaining = event.ticketCategories?.reduce((acc, tc) => acc + tc.remainingQuantity, 0) || 0;
+  const isSoldOut = event.ticketCategories?.length > 0 && totalRemaining <= 0;
+
+  if (event.status === 'CANCELLED') {
+    btnBadge = <span className="tb-status-badge" style={{ background: '#e74c3c', color: 'white', border: '1px solid #e74c3c' }}>Đã hủy</span>;
+    scheduleBadge = <span className="tb-status-badge" style={{ background: '#e74c3c', color: 'white' }}>Suất diễn đã hủy</span>;
+    isPurchaseLocked = true;
+  } else if (event.status === 'COMPLETED' || (event.status === 'PUBLISHED' && isEnded)) {
+    btnBadge = <span className="tb-status-badge tb-status-ended">Đã diễn ra</span>;
+    scheduleBadge = <span className="tb-status-badge tb-status-ended">Suất diễn đã kết thúc</span>;
+    isPurchaseLocked = true;
+  } else if (event.status === 'ONGOING' || (event.status === 'PUBLISHED' && isOngoing)) {
+    btnBadge = <span className="tb-status-badge tb-status-ongoing" style={{ background: 'var(--warning)', border: '1px solid var(--warning)' }}>Đang diễn ra</span>;
+    scheduleBadge = <span className="tb-status-badge tb-status-ongoing" style={{ background: 'var(--warning)', color: 'white' }}>Suất diễn đang diễn ra</span>;
+    isPurchaseLocked = true;
+  } else if (event.status === 'PUBLISHED' && isUpcoming) {
+    if (isSoldOut) {
+      btnBadge = <span className="tb-status-badge" style={{ background: '#e74c3c', color: 'white', border: '1px solid #e74c3c' }}>Đã hết vé</span>;
+      scheduleBadge = <span className="tb-status-badge" style={{ background: '#e74c3c', color: 'white' }}>Suất diễn đã hết vé</span>;
+      isPurchaseLocked = true;
+    } else {
+      btnBadge = (
+        <button className="btn btn-primary btn-lg" onClick={() => document.getElementById('tb-schedule')?.scrollIntoView({ behavior: 'smooth' })}>
+          Mua vé ngay
+        </button>
+      );
+      scheduleBadge = <span className="tb-status-badge tb-status-upcoming">Suất diễn đang mở bán vé</span>;
+      isPurchaseLocked = false;
+    }
+  } else {
+    // DRAFT or others
+    btnBadge = <span className="tb-status-badge" style={{ background: '#f39c12', color: 'white', border: 'none' }}>Bản nháp</span>;
+    scheduleBadge = <span className="tb-status-badge" style={{ background: '#f39c12', color: 'white' }}>Bản nháp</span>;
+    isPurchaseLocked = true;
+  }
+
   const formatVNDate = (dateStr) => {
     const d = new Date(dateStr);
     const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
@@ -86,10 +128,11 @@ export default function EventDetailPage() {
   return (
     <div className="fade-in">
       {/* ═══════════════════════════════════════════════════
-          SECTION 1: Hero Ticket Card
+          SECTION 1: Hero — Blurred Banner + Ticket Card Overlay
           ═══════════════════════════════════════════════════ */}
-      <div className="tb-hero">
-        <div className="container">
+      <div className="tb-hero-banner" style={{ backgroundImage: `url(${event.bannerUrl || event.thumbnailUrl || ''})` }}>
+        <div className="tb-hero-banner-blur" />
+        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
           <div className="tb-ticket-card">
             {/* Left: Event Info */}
             <div className="tb-ticket-info">
@@ -117,21 +160,13 @@ export default function EventDetailPage() {
               </div>
 
               <div className="tb-ticket-status-btn">
-                {isEnded ? (
-                  <span className="tb-status-badge tb-status-ended">Sự kiện đã kết thúc</span>
-                ) : isUpcoming ? (
-                  <button className="btn btn-primary btn-lg" onClick={() => document.getElementById('tb-schedule')?.scrollIntoView({ behavior: 'smooth' })}>
-                    Mua vé ngay
-                  </button>
-                ) : (
-                  <span className="tb-status-badge tb-status-ongoing">Đang diễn ra</span>
-                )}
+                {btnBadge}
               </div>
             </div>
 
-            {/* Right: Event Image */}
+            {/* Right: Event Image (poster style) */}
             <div className="tb-ticket-image">
-              <img src={event.bannerUrl || event.thumbnailUrl} alt={event.title} />
+              <img src={event.imageUrl || event.bannerUrl || event.thumbnailUrl} alt={event.title} />
               <div className="tb-ticket-image-overlay">
                 <span className="badge" style={{ background: CATEGORY_COLORS[event.category], color: 'white', fontSize: '0.85rem', padding: '6px 16px' }}>
                   {CATEGORY_LABELS[event.category]}
@@ -147,7 +182,7 @@ export default function EventDetailPage() {
       </div>
 
       {/* ═══════════════════════════════════════════════════
-          SECTION 2: Giới thiệu (Sơ đồ chỗ ngồi)
+          SECTION 2: Giới thiệu
           ═══════════════════════════════════════════════════ */}
       <div className="container" style={{ marginTop: '48px' }}>
         <div className="tb-section-card">
@@ -161,22 +196,40 @@ export default function EventDetailPage() {
               {event.title}
             </h3>
 
-            {/* Seat map image or description */}
-            {seatMapUrl ? (
+            {/* Event Description */}
+            <div style={{ color: 'var(--text-secondary)', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>
+              {event.description || event.shortDescription}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════
+          SECTION 2.5: Sơ đồ chỗ ngồi
+          ═══════════════════════════════════════════════════ */}
+      <div className="container" style={{ marginTop: '32px' }}>
+        <div className="tb-section-card">
+          <div className="tb-section-header">
+            <span className="tb-section-accent" style={{ background: 'var(--primary)' }} />
+            <h2>Sơ đồ khu vực sân khấu</h2>
+          </div>
+          <div className="tb-section-body">
+            {(event.mapUrl || seatMapUrl) ? (
               <div className="tb-seatmap-wrapper">
                 <img
-                  src={seatMapUrl}
-                  alt={`Sơ đồ chỗ ngồi - ${event.venue?.name}`}
+                  src={event.mapUrl || seatMapUrl}
+                  alt={`Sơ đồ khu vực sân khấu - ${event.title}`}
                   className="tb-seatmap-img"
                   onClick={() => setMapExpanded(true)}
+                  style={{ width: '100%', maxWidth: '800px', margin: '0 auto', display: 'block', borderRadius: '12px', cursor: 'pointer' }}
                 />
                 <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '10px' }}>
                   (Nhấn vào ảnh để phóng to)
                 </p>
               </div>
             ) : (
-              <div style={{ color: 'var(--text-secondary)', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>
-                {event.description || event.shortDescription}
+              <div style={{ textAlign: 'center', padding: '40px 20px', background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px dashed var(--border-color)' }}>
+                <p style={{ color: 'var(--text-muted)' }}>Sơ đồ khu vực sân khấu đang được ban tổ chức cập nhật.</p>
               </div>
             )}
           </div>
@@ -205,81 +258,86 @@ export default function EventDetailPage() {
                 </div>
               </div>
               <div>
-                {isEnded ? (
-                  <span className="tb-status-badge tb-status-ended">Suất diễn đã kết thúc</span>
-                ) : isUpcoming ? (
-                  <span className="tb-status-badge tb-status-upcoming">Sắp diễn ra</span>
-                ) : (
-                  <span className="tb-status-badge tb-status-ongoing">Đang diễn ra</span>
-                )}
+                {scheduleBadge}
               </div>
             </div>
 
             {/* Thông tin vé */}
             <h3 style={{ fontWeight: 600, marginTop: '28px', marginBottom: '16px', fontSize: '1rem' }}>Thông tin vé</h3>
 
-            <div className="tb-ticket-list">
-              {event.ticketCategories?.length > 0 ? (
-                event.ticketCategories.map(tc => {
-                  const isExpanded = expandedTc === tc.id;
-                  const isSoldOut = tc.remainingQuantity <= 0;
-                  const qty = quantities[tc.id] || 0;
-                  return (
-                    <div key={tc.id} className={`tb-ticket-item ${isExpanded ? 'tb-ticket-item-expanded' : ''}`}>
-                      {/* Header row */}
-                      <div
-                        className="tb-ticket-item-header"
-                        onClick={() => setExpandedTc(isExpanded ? null : tc.id)}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          {isExpanded ? <HiChevronDown size={18} /> : <HiChevronRight size={18} />}
-                          <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{tc.name}</span>
+            {event.status === 'CANCELLED' ? (
+              <p style={{ color: 'var(--error)', textAlign: 'center', padding: '30px', fontSize: '1.05rem', background: 'rgba(231, 76, 60, 0.1)', borderRadius: '12px' }}>
+                🚫 Sự kiện đã bị hủy. Hệ thống đã khóa chức năng hiển thị và mua vé.
+              </p>
+            ) : (
+              <div className="tb-ticket-list">
+                {event.ticketCategories?.length > 0 ? (
+                  event.ticketCategories.map(tc => {
+                    const isExpanded = expandedTc === tc.id;
+                    const isSoldOut = tc.remainingQuantity <= 0;
+                    const qty = quantities[tc.id] || 0;
+                    return (
+                      <div key={tc.id} className={`tb-ticket-item ${isExpanded ? 'tb-ticket-item-expanded' : ''}`}>
+                        {/* Header row */}
+                        <div
+                          className="tb-ticket-item-header"
+                          onClick={() => setExpandedTc(isExpanded ? null : tc.id)}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            {isExpanded ? <HiChevronDown size={18} /> : <HiChevronRight size={18} />}
+                            <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{tc.name}</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span style={{ color: 'var(--success)', fontWeight: 700 }}>{formatCurrency(tc.price)}</span>
+                            {isSoldOut ? (
+                              <span className="tb-badge-soldout">Hết vé</span>
+                            ) : (
+                              <span className="tb-badge-available">Còn vé</span>
+                            )}
+                          </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <span style={{ color: 'var(--success)', fontWeight: 700 }}>{formatCurrency(tc.price)}</span>
-                          {isSoldOut ? (
-                            <span className="tb-badge-soldout">Hết vé</span>
-                          ) : (
-                            <span className="tb-badge-available">Còn vé</span>
-                          )}
-                        </div>
-                      </div>
 
-                      {/* Expanded: description + quantity */}
-                      {isExpanded && (
-                        <div className="tb-ticket-item-body fade-in">
-                          {tc.description && (
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: '12px' }}>{tc.description}</p>
-                          )}
-                          {tc.zoneName && (
-                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '12px' }}>📍 Khu vực: {tc.zoneName}</p>
-                          )}
-                          <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: '16px' }}>
-                            Còn lại: <strong style={{ color: 'var(--success)' }}>{tc.remainingQuantity}</strong> / {tc.totalQuantity} vé • Tối đa {tc.maxPerBooking} vé/đơn
-                          </p>
+                        {/* Expanded: description + quantity */}
+                        {isExpanded && (
+                          <div className="tb-ticket-item-body fade-in">
+                            {tc.description && (
+                              <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: '12px' }}>{tc.description}</p>
+                            )}
+                            {tc.zoneName && (
+                              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '12px' }}>📍 Khu vực: {tc.zoneName}</p>
+                            )}
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: '16px' }}>
+                              Còn lại: <strong style={{ color: 'var(--success)' }}>{tc.remainingQuantity}</strong> / {tc.totalQuantity} vé • Tối đa {tc.maxPerBooking} vé/đơn
+                            </p>
 
-                          {!isSoldOut && !isEnded && (
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                              <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Số lượng:</span>
-                              <div className="ticket-qty">
-                                <button onClick={(e) => { e.stopPropagation(); updateQty(tc.id, -1, tc.maxPerBooking); }}><HiMinus /></button>
-                                <span>{qty}</span>
-                                <button onClick={(e) => { e.stopPropagation(); updateQty(tc.id, 1, Math.min(tc.maxPerBooking, tc.remainingQuantity)); }}><HiPlus /></button>
+                            {!isSoldOut && !isPurchaseLocked && (
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Số lượng:</span>
+                                <div className="ticket-qty">
+                                  <button onClick={(e) => { e.stopPropagation(); updateQty(tc.id, -1, tc.maxPerBooking); }}><HiMinus /></button>
+                                  <span>{qty}</span>
+                                  <button onClick={(e) => { e.stopPropagation(); updateQty(tc.id, 1, Math.min(tc.maxPerBooking, tc.remainingQuantity)); }}><HiPlus /></button>
+                                </div>
                               </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })
-              ) : (
-                <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>Chưa có thông tin vé.</p>
-              )}
-            </div>
+                            )}
+                            {isPurchaseLocked && (
+                              <p style={{ color: '#e74c3c', fontSize: '0.9rem', marginTop: '10px', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                🔒 Hiện không thể mua vé trực tuyến
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>Chưa có thông tin vé.</p>
+                )}
+              </div>
+            )}
 
             {/* Checkout bar */}
-            {totalTickets > 0 && (
+            {totalTickets > 0 && !isPurchaseLocked && (
               <div className="tb-checkout-bar fade-in">
                 <div>
                   <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Tổng cộng ({totalTickets} vé)</div>

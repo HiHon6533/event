@@ -288,40 +288,71 @@ textarea.form-input { resize: vertical; min-height: 100px; }
 .auth-footer { text-align: center; margin-top: 24px; color: var(--text-muted); font-size: 0.9rem; }
 
 /* ── Event Detail – Ticketbox Style ──────── */
-.tb-hero {
-  background: var(--gradient-hero);
-  padding: 40px 0 50px;
+
+/* Hero Banner — Full-width blurred background */
+.tb-hero-banner {
+  position: relative;
+  min-height: 420px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  padding: 50px 0;
+  overflow: hidden;
 }
+.tb-hero-banner-blur {
+  position: absolute;
+  inset: -20px;
+  background: inherit;
+  filter: blur(25px) brightness(0.35);
+  z-index: 0;
+}
+/* Extra gradient overlay for depth */
+.tb-hero-banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 10, 26, 0.5) 0%,
+    rgba(10, 10, 26, 0.7) 50%,
+    rgba(10, 10, 26, 0.95) 100%
+  );
+  z-index: 1;
+}
+
+/* Ticket Card — overlaid on blurred banner */
 .tb-ticket-card {
   display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  grid-template-columns: 2fr 3fr;
+  background: rgba(20, 20, 40, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(108, 92, 231, 0.2);
   border-radius: var(--radius-lg);
-  overflow: hidden;
   position: relative;
   min-height: 320px;
+  box-shadow: 0 16px 60px rgba(0, 0, 0, 0.5);
+
+  /* Create clean semi-circle cutouts at 40% */
+  -webkit-mask-image: radial-gradient(circle at 40% 0, transparent 7px, black 8px),
+                      radial-gradient(circle at 40% 100%, transparent 7px, black 8px);
+  -webkit-mask-size: 100% 50%, 100% 50%;
+  -webkit-mask-position: top, bottom;
+  -webkit-mask-repeat: no-repeat;
+  mask-image: radial-gradient(circle at 40% 0, transparent 7px, black 8px),
+              radial-gradient(circle at 40% 100%, transparent 7px, black 8px);
+  mask-size: 100% 50%, 100% 50%;
+  mask-position: top, bottom;
+  mask-repeat: no-repeat;
 }
 @media (max-width: 900px) {
   .tb-ticket-card { grid-template-columns: 1fr; }
 }
 
-/* Ticket perforation (decorative dots) */
+/* Old ticket perforation hidden since we use clean CSS masks now */
 .tb-ticket-perforation {
-  position: absolute;
-  width: 24px; height: 24px;
-  background: var(--bg-dark);
-  border-radius: 50%;
-  z-index: 2;
-}
-.tb-perf-top {
-  top: -12px; left: calc(42% - 12px);
-}
-.tb-perf-bottom {
-  bottom: -12px; left: calc(42% - 12px);
-}
-@media (max-width: 900px) {
-  .tb-perf-top, .tb-perf-bottom { display: none; }
+  display: none;
 }
 
 .tb-ticket-info {
@@ -329,10 +360,10 @@ textarea.form-input { resize: vertical; min-height: 100px; }
   display: flex;
   flex-direction: column;
   justify-content: center;
-  border-right: 2px dashed var(--border);
+  border-right: 2px dashed rgba(108, 92, 231, 0.25);
 }
 @media (max-width: 900px) {
-  .tb-ticket-info { border-right: none; border-bottom: 2px dashed var(--border); }
+  .tb-ticket-info { border-right: none; border-bottom: 2px dashed rgba(108, 92, 231, 0.25); }
 }
 
 .tb-ticket-title {

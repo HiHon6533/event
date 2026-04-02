@@ -24,6 +24,7 @@ public class EventRequest {
 
     private String bannerUrl;
     private String thumbnailUrl;
+    private String mapUrl;
 
     @NotNull(message = "Thời gian bắt đầu không được để trống")
     private LocalDateTime startTime;

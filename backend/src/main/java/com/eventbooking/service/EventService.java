@@ -11,6 +11,7 @@ import java.util.List;
 
 public interface EventService {
     PageResponse<EventResponse> getPublishedEvents(EventCategory category, String keyword, int page, int size);
+    PageResponse<EventResponse> getAllEventsPublic(EventCategory category, String keyword, int page, int size);
     List<EventResponse> getFeaturedEvents();
     EventDetailResponse getEventById(Long id);
     EventResponse createEvent(EventRequest request);
@@ -18,4 +19,6 @@ public interface EventService {
     void updateEventStatus(Long id, EventStatus status);
     void deleteEvent(Long id);
     PageResponse<EventResponse> getAllEvents(int page, int size);
+    List<String> getSearchSuggestions();
+    void logSearchKeyword(String keyword);
 }

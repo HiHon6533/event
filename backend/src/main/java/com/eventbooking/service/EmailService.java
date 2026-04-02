@@ -114,4 +114,44 @@ public class EmailService {
             throw new RuntimeException("Không thể gửi email vé: " + e.getMessage(), e);
         }
     }
+
+    @Async
+    public void sendCancellationEmail(String toEmail, String fullName, String eventTitle) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom("hoangnguyen6533@gmail.com", "Event Booking System");
+            helper.setTo(toEmail);
+            helper.setSubject("🚨 Thông báo hủy sự kiện - " + eventTitle);
+
+            String htmlContent = """
+                <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
+                    <div style="background: linear-gradient(135deg, #ef4444, #f87171); padding: 32px 24px; text-align: center;">
+                        <h1 style="color: #fff; margin: 0; font-size: 24px;">🎫 Event Booking</h1>
+                        <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0;">Thông báo quan trọng</p>
+                    </div>
+                    <div style="padding: 32px 24px; color: #334155;">
+                        <p style="margin: 0 0 12px; font-size: 16px;">Xin chào <strong>%s</strong>,</p>
+                        <p style="margin: 0 0 24px; line-height: 1.6;">Chúng tôi rất tiếc phải thông báo rằng sự kiện <strong>%s</strong> mà bạn đã mua vé đã bị <strong>HỦY</strong> từ phía ban tổ chức.</p>
+                        
+                        <div style="background: #fef2f2; border: 2px dashed #fca5a5; border-radius: 12px; padding: 24px; text-align: center; margin: 0 0 24px;">
+                            <p style="margin: 0 0 16px; font-weight: 600; color: #b91c1c;">HƯỚNG DẪN HOÀN TIỀN (REFUND)</p>
+                            <p style="margin: 0; font-size: 14px; color: #991b1b;">Vui lòng phản hồi (reply) lại email này kèm theo <strong>Thông tin tài khoản ngân hàng (Tên ngân hàng, Số tài khoản, Tên chủ tài khoản)</strong> và mã đơn hàng của bạn để chúng tôi tiến hành hoàn tiền trong thời gian sớm nhất.</p>
+                        </div>
+                        
+                        <p style="margin: 0; color: #64748b; font-size: 14px; text-align: center;">Cáo lỗi vì sự bất tiện này. Cảm ơn bạn đã thông cảm.</p>
+                    </div>
+                    <div style="background: #f1f5f9; padding: 16px 24px; text-align: center;">
+                        <p style="margin: 0; color: #64748b; font-size: 12px;">© 2026 Event Booking System</p>
+                    </div>
+                </div>
+                """.formatted(fullName, eventTitle);
+
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+        } catch (MessagingException | java.io.UnsupportedEncodingException e) {
+            throw new RuntimeException("Không thể gửi email thông báo hủy: " + e.getMessage(), e);
+        }
+    }
 }
