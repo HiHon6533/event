@@ -1,40 +1,76 @@
 import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, Navigate } from 'react-router-dom';
-import { dashboardApi } from '../../services/api';
+import { dashboardApi, organizerApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency } from '../../utils/helpers';
-import { HiOutlineChartBar, HiOutlineCalendar, HiOutlineUsers, HiOutlineTicket, HiOutlineLocationMarker } from 'react-icons/hi';
+import { HiOutlineChartBar, HiOutlineCalendar, HiOutlineUsers, HiOutlineTicket, HiOutlineLocationMarker, HiOutlineClipboardCheck, HiOutlineClock, HiOutlineShieldCheck } from 'react-icons/hi';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from 'recharts';
 
 function AdminSidebar() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isManager, user } = useAuth();
   const location = useLocation();
   const isActive = (path) => location.pathname.startsWith(path) ? 'active' : '';
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    if (isAdmin) {
+      organizerApi.getPendingCount().then(res => setPendingCount(res.data.count)).catch(() => {});
+    }
+  }, [isAdmin]);
+
   return (
     <aside className="admin-sidebar">
-      <h3 style={{ fontWeight: 700, marginBottom: 24, padding: '0 16px', color: 'var(--primary-light)' }}>⚙️ Quản trị</h3>
-      <Link to="/" style={{ opacity: 0.8, marginBottom: 16 }}>
-        👈 Trở về Trang chủ
+      {/* Role Badge */}
+      <div style={{ padding: '0 16px', marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <div style={{ width: 36, height: 36, borderRadius: '50%', background: isAdmin ? 'linear-gradient(135deg, #e74c3c, #c0392b)' : 'linear-gradient(135deg, #2980b9, #3498db)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 700, color: '#fff' }}>
+            {user?.fullName?.charAt(0)}
+          </div>
+          <div>
+            <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#fff' }}>{user?.fullName}</div>
+            <div style={{ fontSize: '0.75rem', color: isAdmin ? '#e74c3c' : '#3498db', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              {isAdmin ? '⚙️ Admin' : '🏢 Ban tổ chức'}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ height: 1, background: 'var(--border)', margin: '0 16px 16px' }} />
+
+      <Link to="/" style={{ opacity: 0.7, marginBottom: 12, fontSize: '0.9rem' }}>
+        ← Trở về Trang chủ
       </Link>
-      <Link to="/admin" className={isActive('/admin') && location.pathname === '/admin' ? 'active' : ''}>
+
+      <Link to="/admin" className={location.pathname === '/admin' ? 'active' : ''}>
         <HiOutlineChartBar /> Dashboard
       </Link>
       <Link to="/admin/events" className={isActive('/admin/events')}>
-        <HiOutlineCalendar /> Sự kiện
+        <HiOutlineCalendar /> {isManager ? 'Sự kiện của tôi' : 'Quản lý Sự kiện'}
       </Link>
       <Link to="/admin/bookings" className={isActive('/admin/bookings')}>
-        <HiOutlineTicket /> Đặt vé
+        <HiOutlineTicket /> {isManager ? 'Đơn đặt vé' : 'Quản lý Đặt vé'}
       </Link>
+
       {isAdmin && (
         <>
+          <div style={{ height: 1, background: 'var(--border)', margin: '12px 16px' }} />
+          <div style={{ padding: '0 16px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8, fontWeight: 600 }}>Quản trị hệ thống</div>
           <Link to="/admin/venues" className={isActive('/admin/venues')}>
             <HiOutlineLocationMarker /> Địa điểm
           </Link>
           <Link to="/admin/users" className={isActive('/admin/users')}>
             <HiOutlineUsers /> Người dùng
+          </Link>
+          <Link to="/admin/organizer-requests" className={isActive('/admin/organizer-requests')} style={{ position: 'relative' }}>
+            <HiOutlineClipboardCheck /> Duyệt BTC
+            {pendingCount > 0 && (
+              <span style={{ position: 'absolute', right: 16, background: '#e74c3c', color: '#fff', borderRadius: '10px', padding: '1px 8px', fontSize: '0.7rem', fontWeight: 700, minWidth: 20, textAlign: 'center' }}>
+                {pendingCount}
+              </span>
+            )}
           </Link>
         </>
       )}
@@ -65,6 +101,12 @@ function DashboardHome() {
 
   if (isAdmin) {
     cards.splice(2, 0, { icon: <HiOutlineUsers />, label: 'Người dùng', value: stats?.totalUsers || 0, color: '#fd79a8' });
+    if (stats?.pendingEvents > 0) {
+      cards.push({ icon: <HiOutlineClock />, label: 'Chờ duyệt', value: stats.pendingEvents, color: '#e67e22' });
+    }
+    if (stats?.pendingOrganizerRequests > 0) {
+      cards.push({ icon: <HiOutlineShieldCheck />, label: 'Duyệt BTC', value: stats.pendingOrganizerRequests, color: '#e74c3c' });
+    }
   }
 
   // Chart data manipulations
@@ -78,18 +120,18 @@ function DashboardHome() {
   return (
     <>
       <div className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>📊 Dashboard</h1>
+        <h1>📊 {isAdmin ? 'Dashboard Tổng quan' : 'Dashboard Sự kiện của tôi'}</h1>
       </div>
       
-      <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: `repeat(${cards.length}, 1fr)`, gap: '24px', marginBottom: '24px' }}>
+      <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(200px, 1fr))`, gap: '20px', marginBottom: '24px' }}>
         {cards.map((c, i) => (
           <div key={i} className="card" style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '24px' }}>
-            <div style={{ background: `${c.color}20`, color: c.color, width: '56px', height: '56px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem' }}>
+            <div style={{ background: `${c.color}20`, color: c.color, width: '56px', height: '56px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem', flexShrink: 0 }}>
               {c.icon}
             </div>
             <div>
               <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>{c.value}</div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', fontWeight: 500 }}>{c.label}</div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontWeight: 500 }}>{c.label}</div>
             </div>
           </div>
         ))}
@@ -161,6 +203,35 @@ function DashboardHome() {
         </div>
 
       </div>
+
+      {/* Recent Bookings Table */}
+      {stats?.recentBookings && stats.recentBookings.length > 0 && (
+        <div className="card" style={{ padding: '24px', marginTop: '24px' }}>
+          <h3 style={{ fontWeight: 700, margin: '0 0 16px 0' }}>🕐 Đơn đặt vé gần đây</h3>
+          <div className="table-container">
+            <table className="data-table">
+              <thead>
+                <tr><th>Mã</th><th>Khách hàng</th><th>Sự kiện</th><th>Tổng tiền</th><th>Trạng thái</th></tr>
+              </thead>
+              <tbody>
+                {stats.recentBookings.slice(0, 5).map(b => (
+                  <tr key={b.id}>
+                    <td className="booking-code">{b.bookingCode}</td>
+                    <td>{b.userFullName || 'Khách'}</td>
+                    <td style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.eventTitle}</td>
+                    <td style={{ fontWeight: 600, color: 'var(--primary-light)' }}>{formatCurrency(b.totalAmount)}</td>
+                    <td>
+                      <span className="badge" style={{ background: b.status === 'CONFIRMED' ? '#27ae60' : b.status === 'CANCELLED' ? '#e74c3c' : '#f39c12', color: 'white' }}>
+                        {b.status === 'CONFIRMED' ? 'Đã xác nhận' : b.status === 'CANCELLED' ? 'Đã hủy' : 'Chờ xử lý'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </>
   );
 }

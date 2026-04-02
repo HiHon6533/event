@@ -28,13 +28,23 @@ export const CATEGORY_COLORS = {
 };
 
 export const STATUS_LABELS = {
-  DRAFT: 'Nháp', PUBLISHED: 'Đang bán', CANCELLED: 'Đã hủy', COMPLETED: 'Hoàn thành',
+  DRAFT: 'Nháp', PENDING_REVIEW: 'Chờ duyệt', PUBLISHED: 'Đang bán', 
+  CANCELLED: 'Đã hủy', COMPLETED: 'Hoàn thành', ONGOING: 'Đang diễn ra',
   PENDING: 'Chờ xử lý', CONFIRMED: 'Đã xác nhận',
   SUCCESS: 'Thành công', FAILED: 'Thất bại', REFUNDED: 'Đã hoàn tiền',
 };
 
 export const STATUS_COLORS = {
-  DRAFT: '#95a5a6', PUBLISHED: '#27ae60', CANCELLED: '#e74c3c', COMPLETED: '#3498db',
+  DRAFT: '#95a5a6', PENDING_REVIEW: '#e67e22', PUBLISHED: '#27ae60', 
+  CANCELLED: '#e74c3c', COMPLETED: '#3498db', ONGOING: '#2ecc71',
   PENDING: '#f39c12', CONFIRMED: '#27ae60',
   SUCCESS: '#27ae60', FAILED: '#e74c3c', REFUNDED: '#8e44ad',
+};
+
+export const ROLE_LABELS = {
+  ADMIN: 'Quản trị viên', MANAGER: 'Ban tổ chức', USER: 'Người dùng',
+};
+
+export const ROLE_COLORS = {
+  ADMIN: '#e74c3c', MANAGER: '#2980b9', USER: '#95a5a6',
 };

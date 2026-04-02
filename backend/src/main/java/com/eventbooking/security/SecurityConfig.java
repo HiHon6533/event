@@ -39,24 +39,40 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/payment/vnpay-return").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
 
-                // Admin endpoints
+                // Dashboard: ADMIN + MANAGER (Manager sees only own data via service layer)
+                .requestMatchers("/api/dashboard/**").hasAnyRole("ADMIN", "MANAGER")
+
+                // Admin-only: user management, organizer request management
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/dashboard/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/upload/**").hasAnyRole("ADMIN", "MANAGER")
-                .requestMatchers(HttpMethod.POST, "/api/events/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/events/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/events/**").hasRole("ADMIN")
+
+                // Events: ADMIN + MANAGER can create/update (service layer enforces ownership)
+                .requestMatchers(HttpMethod.POST, "/api/events/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers(HttpMethod.PUT, "/api/events/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers(HttpMethod.PATCH, "/api/events/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers(HttpMethod.DELETE, "/api/events/**").hasAnyRole("ADMIN", "MANAGER")
+
+                // Venues: Admin only
                 .requestMatchers(HttpMethod.POST, "/api/venues/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/venues/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/venues/**").hasRole("ADMIN")
+
+                // Zones: Admin only
                 .requestMatchers(HttpMethod.POST, "/api/zones/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/zones/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/zones/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/ticket-categories/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/ticket-categories/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/ticket-categories/**").hasRole("ADMIN")
 
-                // User endpoints
+                // Ticket Categories: ADMIN + MANAGER (service layer enforces ownership)
+                .requestMatchers(HttpMethod.POST, "/api/ticket-categories/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers(HttpMethod.PUT, "/api/ticket-categories/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers(HttpMethod.DELETE, "/api/ticket-categories/**").hasAnyRole("ADMIN", "MANAGER")
+
+                // Uploads: ADMIN + MANAGER
+                .requestMatchers(HttpMethod.POST, "/api/upload/**").hasAnyRole("ADMIN", "MANAGER")
+
+                // Bookings admin view: ADMIN + MANAGER
+                .requestMatchers("/api/bookings/admin/**").hasAnyRole("ADMIN", "MANAGER")
+
+                // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -101,7 +101,19 @@ export const userApi = {
   updateProfile: (data) => api.put('/users/me', data),
   getAll: (params) => api.get('/admin/users', { params }),
   getById: (id) => api.get(`/admin/users/${id}`),
+  changeRole: (id, role) => api.patch(`/admin/users/${id}/role`, null, { params: { role } }),
+  toggleStatus: (id) => api.patch(`/admin/users/${id}/toggle-status`),
   delete: (id) => api.delete(`/admin/users/${id}`),
+};
+
+// ── Organizer Registration ─────────────────────
+export const organizerApi = {
+  register: (data) => api.post('/users/register-organizer', data),
+  getMyStatus: () => api.get('/users/organizer-status'),
+  getRequests: (params) => api.get('/admin/organizer-requests', { params }),
+  getPendingCount: () => api.get('/admin/organizer-requests/pending-count'),
+  approve: (id) => api.patch(`/admin/organizer-requests/${id}/approve`),
+  reject: (id, note) => api.patch(`/admin/organizer-requests/${id}/reject`, null, { params: { note } }),
 };
 
 // ── Dashboard ──────────────────────────────────

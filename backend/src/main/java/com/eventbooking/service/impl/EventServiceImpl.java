@@ -159,6 +159,9 @@ public class EventServiceImpl implements EventService {
                     .orElseThrow(() -> new ResourceNotFoundException("User", "id", securityUtils.getCurrentUserId()));
         }
 
+        // Manager creates as PENDING_REVIEW (needs admin approval), Admin creates as DRAFT
+        EventStatus initialStatus = (manager != null) ? EventStatus.PENDING_REVIEW : EventStatus.DRAFT;
+
         Event event = Event.builder()
                 .venue(venue)
                 .manager(manager)
@@ -171,7 +174,7 @@ public class EventServiceImpl implements EventService {
                 .mapUrl(request.getMapUrl())
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
-                .status(EventStatus.DRAFT) // create as draft so admin can review and publish later
+                .status(initialStatus)
                 .isFeatured(request.getIsFeatured() != null ? request.getIsFeatured() : false)
                 .build();
 
@@ -217,8 +220,12 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new ResourceNotFoundException("Event", "id", id));
 
         if (securityUtils.isCurrentUserManager()) {
+            // Manager can only cancel their own events, cannot publish
             if (event.getManager() == null || !event.getManager().getId().equals(securityUtils.getCurrentUserId())) {
                 throw new AccessDeniedException("Bạn không có quyền cập nhật sự kiện này.");
+            }
+            if (status == EventStatus.PUBLISHED) {
+                throw new AccessDeniedException("Chỉ Admin mới có quyền xuất bản sự kiện. Sự kiện của bạn sẽ được Admin duyệt.");
             }
         }
 

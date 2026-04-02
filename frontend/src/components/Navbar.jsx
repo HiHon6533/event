@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { eventApi } from '../services/api';
-import { HiOutlineTicket, HiOutlineSearch, HiTrendingUp } from 'react-icons/hi';
+import { HiOutlineTicket, HiOutlineSearch, HiTrendingUp, HiOutlinePlusCircle } from 'react-icons/hi';
 
 export default function Navbar() {
   const { user, logout, isAdmin, isManager } = useAuth();
@@ -45,6 +45,16 @@ export default function Navbar() {
     setKeyword(suggestion);
     setShowSuggestions(false);
     navigate(`/events?keyword=${encodeURIComponent(suggestion)}`);
+  };
+
+  const handleCreateEventClick = () => {
+    if (!user) {
+      navigate('/login');
+    } else if (isAdmin || isManager) {
+      navigate('/admin/events');
+    } else {
+      navigate('/register-organizer');
+    }
   };
 
   return (
@@ -93,6 +103,25 @@ export default function Navbar() {
           <Link to="/events" className={isActive('/events')}>Sự kiện</Link>
           {user && <Link to="/bookings" className={isActive('/bookings')}>Vé của tôi</Link>}
           {(isAdmin || isManager) && <Link to="/admin" className={isActive('/admin')}>Quản trị</Link>}
+          
+          {/* Create Event CTA */}
+          <button
+            onClick={handleCreateEventClick}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: 'linear-gradient(135deg, var(--primary), #8b5cf6)', 
+              color: '#fff', border: 'none', borderRadius: '20px', 
+              padding: '6px 16px', cursor: 'pointer', fontWeight: 600, 
+              fontSize: '0.85rem', whiteSpace: 'nowrap',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 2px 8px rgba(124, 58, 237, 0.3)',
+            }}
+            onMouseOver={e => e.currentTarget.style.transform = 'translateY(-1px)'}
+            onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+          >
+            <HiOutlinePlusCircle size={16} />
+            Tạo sự kiện
+          </button>
         </div>
 
         <div className="navbar-actions">
@@ -106,8 +135,13 @@ export default function Navbar() {
                   <div className="dropdown-info">
                     <strong>{user.fullName}</strong>
                     <small>{user.email}</small>
+                    <small style={{ color: isAdmin ? '#e74c3c' : isManager ? '#3498db' : 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                      {isAdmin ? '⚙️ Admin' : isManager ? '🏢 Ban tổ chức' : '👤 Người dùng'}
+                    </small>
                   </div>
+                  <Link to="/profile" className="dropdown-item">👤 Hồ sơ cá nhân</Link>
                   <Link to="/bookings" className="dropdown-item">🎫 Vé của tôi</Link>
+                  {(isAdmin || isManager) && <Link to="/admin" className="dropdown-item">⚙️ Bảng điều khiển</Link>}
                   <button onClick={logout} className="dropdown-item text-danger">Đăng xuất</button>
                 </div>
               )}

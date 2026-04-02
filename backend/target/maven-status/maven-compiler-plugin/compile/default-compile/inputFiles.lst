@@ -15,6 +15,7 @@ D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\mapper\TicketCategoryMapper.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\entity\enums\PaymentMethod.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\service\TicketCategoryService.java
+D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\dto\request\OrganizerRequest.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\service\impl\TicketCategoryServiceImpl.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\dto\response\EventDetailResponse.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\service\DashboardService.java
@@ -35,17 +36,20 @@ D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\entity\Event.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\dto\response\BookingDetailResponse.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\repository\BookingDetailRepository.java
+D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\repository\OrganizerRegistrationRepository.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\security\JwtAuthenticationFilter.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\controller\TicketController.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\service\impl\UserServiceImpl.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\service\VenueService.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\dto\response\BookingResponse.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\controller\BookingController.java
+D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\dto\response\OrganizerRegistrationResponse.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\security\UserDetailsServiceImpl.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\service\AuthService.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\repository\SeatRepository.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\controller\TicketCategoryController.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\service\impl\DashboardServiceImpl.java
+D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\entity\enums\OrganizerRequestStatus.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\entity\enums\UserRole.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\entity\enums\PaymentStatus.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\controller\CheckInController.java
@@ -80,6 +84,7 @@ D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\exception\ResourceNotFoundException.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\service\impl\AuthServiceImpl.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\entity\Seat.java
+D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\entity\OrganizerRegistration.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\entity\User.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\entity\Zone.java
 D:\Hoc_ky_6\Cong_nghe_phan_mem_HDT\FinalProject\event\backend\src\main\java\com\eventbooking\service\TicketService.java
