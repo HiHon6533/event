@@ -59,8 +59,15 @@ public class EventServiceImpl implements EventService {
         Page<Event> events;
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("startTime").ascending());
 
-        if (keyword != null && !keyword.isEmpty() || category != null) {
-            events = eventRepository.searchEvents(EventStatus.PUBLISHED, category, keyword, pageRequest);
+        // Smart search: split words and join with % so "Anh Trai Say Hi" matches "Anh Trai \"Say Hi\""
+        String normalizedKeyword = null;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String[] words = keyword.trim().replaceAll("[\"'\\-]", " ").trim().split("\\s+");
+            normalizedKeyword = String.join("%", words);
+        }
+
+        if ((normalizedKeyword != null && !normalizedKeyword.isEmpty()) || category != null) {
+            events = eventRepository.searchEvents(EventStatus.PUBLISHED, category, normalizedKeyword, pageRequest);
         } else {
             events = eventRepository.findByStatus(EventStatus.PUBLISHED, pageRequest);
         }
@@ -81,8 +88,15 @@ public class EventServiceImpl implements EventService {
         Page<Event> events;
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("startTime").descending());
 
-        if ((keyword != null && !keyword.isEmpty()) || category != null) {
-            events = eventRepository.searchAllEvents(category, keyword, pageRequest);
+        // Smart search: split words and join with % so "Anh Trai Say Hi" matches "Anh Trai \"Say Hi\""
+        String normalizedKeyword = null;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String[] words = keyword.trim().replaceAll("[\"'\\-]", " ").trim().split("\\s+");
+            normalizedKeyword = String.join("%", words);
+        }
+
+        if ((normalizedKeyword != null && !normalizedKeyword.isEmpty()) || category != null) {
+            events = eventRepository.searchAllEvents(category, normalizedKeyword, pageRequest);
         } else {
             events = eventRepository.findAll(pageRequest);
         }
@@ -101,9 +115,28 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional(readOnly = true)
     public List<EventResponse> getFeaturedEvents() {
-        return eventRepository.findByIsFeaturedTrueAndStatus(EventStatus.PUBLISHED).stream()
-                .map(eventMapper::toResponse)
-                .collect(Collectors.toList());
+        // Find top 10 trending events based on confirmed bookings
+        List<Event> trendingEvents = eventRepository.findTopTrendingEvents(EventStatus.PUBLISHED, PageRequest.of(0, 10)).getContent();
+        
+        java.util.List<EventResponse> response = new java.util.ArrayList<>();
+        for (Event e : trendingEvents) {
+            response.add(eventMapper.toResponse(e));
+        }
+
+        // Fallback: If we have less than 10 events, append from isFeatured DB (to ensure we always have enough if no bookings)
+        if (response.size() < 10) {
+            List<Event> featuredInDb = eventRepository.findByIsFeaturedTrueAndStatus(EventStatus.PUBLISHED);
+            for (Event e : featuredInDb) {
+                // Ensure no duplicates and event has not yet ended
+                boolean duplicate = response.stream().anyMatch(resp -> resp.getId().equals(e.getId()));
+                if (!duplicate && e.getEndTime().isAfter(java.time.LocalDateTime.now())) {
+                    response.add(eventMapper.toResponse(e));
+                }
+                if (response.size() >= 10) break;
+            }
+        }
+
+        return response;
     }
 
     @Override

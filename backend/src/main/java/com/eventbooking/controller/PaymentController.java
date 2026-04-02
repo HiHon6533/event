@@ -99,30 +99,37 @@ public class PaymentController {
 
                 booking.setStatus(BookingStatus.CONFIRMED);
                 
-                // 1. Generate Secret Token
-                String qrToken = UUID.randomUUID().toString();
-                booking.setQrSecretToken(qrToken);
-                booking.setPayment(payment);
+                // 1 & 3 & 4. Lặp qua tổng số vé để sinh mã QR và gửi email từng vé
+                int totalTickets = booking.getTotalTickets() != null ? booking.getTotalTickets() : 1;
+                java.util.List<String> qrTokens = new java.util.ArrayList<>();
                 
-                // 2. Save Booking
+                for (int i = 1; i <= totalTickets; i++) {
+                    String qrToken = UUID.randomUUID().toString();
+                    qrTokens.add(qrToken);
+                    
+                    byte[] qrImage = qrCodeService.generateQRCodeImage(qrToken, 300, 300);
+                    
+                    emailService.sendTicketEmail(
+                            booking.getUser().getEmail(),
+                            booking.getUser().getFullName(),
+                            booking.getBookingCode(),
+                            booking.getEvent().getTitle(),
+                            qrImage,
+                            i,
+                            totalTickets
+                    );
+                }
+                
+                // 2. Gom tất cả QR Tokens lại và lưu chung vào Booking
+                booking.setQrSecretToken(String.join(",", qrTokens));
+                booking.setPayment(payment);
                 bookingRepository.save(booking);
-
-                // 3. Generate QR Code Image bytes
-                byte[] qrImage = qrCodeService.generateQRCodeImage(qrToken, 300, 300);
-
-                // 4. Send Email asynchronously
-                emailService.sendTicketEmail(
-                        booking.getUser().getEmail(),
-                        booking.getUser().getFullName(),
-                        booking.getBookingCode(),
-                        booking.getEvent().getTitle(),
-                        qrImage
-                );
             }
             return ResponseEntity.ok(Map.of(
                     "status", "SUCCESS",
                     "message", "Thanh toán thành công",
                     "bookingCode", booking.getBookingCode(),
+                    "bookingId", String.valueOf(booking.getId()),
                     "transactionId", params.getOrDefault("vnp_TransactionNo", "")
             ));
         } else {

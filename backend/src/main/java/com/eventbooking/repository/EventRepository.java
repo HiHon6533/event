@@ -38,6 +38,13 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Query("SELECT COUNT(e) FROM Event e WHERE e.manager.id = :managerId")
     long countByManagerId(@Param("managerId") Long managerId);
 
+    @Query("SELECT e FROM Event e " +
+           "LEFT JOIN Booking b ON b.event = e AND b.status = 'CONFIRMED' " +
+           "WHERE e.status = :status AND e.endTime > CURRENT_TIMESTAMP " +
+           "GROUP BY e " +
+           "ORDER BY COUNT(b) DESC")
+    Page<Event> findTopTrendingEvents(@Param("status") EventStatus status, Pageable pageable);
+
     @Query("SELECT COUNT(e) FROM Event e WHERE e.status = :status")
     long countByStatus(@Param("status") EventStatus status);
 }

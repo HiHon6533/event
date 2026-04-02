@@ -29,6 +29,13 @@ public class EventMapper {
                                  .mapToInt(com.eventbooking.entity.TicketCategory::getRemainingQuantity)
                                  .sum() <= 0;
 
+        Double minPrice = 0.0;
+        if (event.getTicketCategories() != null && !event.getTicketCategories().isEmpty()) {
+            minPrice = event.getTicketCategories().stream()
+                    .mapToDouble(tc -> tc.getPrice() != null ? tc.getPrice().doubleValue() : 0.0)
+                    .min().orElse(0.0);
+        }
+
         return EventResponse.builder()
                 .id(event.getId())
                 .title(event.getTitle())
@@ -41,6 +48,7 @@ public class EventMapper {
                 .status(event.getStatus())
                 .isFeatured(event.getIsFeatured())
                 .isSoldOut(isSoldOut)
+                .minPrice(minPrice)
                 .venueId(event.getVenue().getId())
                 .venueName(event.getVenue().getName())
                 .venueCity(event.getVenue().getCity())

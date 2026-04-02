@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { bookingApi } from '../services/api';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
@@ -16,6 +17,21 @@ export default function LoginPage() {
     try {
       await login(email, password);
       toast.success('Đăng nhập thành công!');
+      
+      const pending = sessionStorage.getItem('pendingBooking');
+      if (pending) {
+        try {
+          const bookingData = JSON.parse(pending);
+          sessionStorage.removeItem('pendingBooking');
+          toast.loading('Đang xử lý đặt vé...', { id: 'booking_process' });
+          const res = await bookingApi.create(bookingData);
+          toast.success('Đặt vé thành công!', { id: 'booking_process' });
+          navigate(`/bookings/${res.data.id}`);
+          return;
+        } catch (err) {
+          toast.error(err.response?.data?.message || 'Đặt vé thất bại, vui lòng thử lại', { id: 'booking_process' });
+        }
+      }
       navigate('/');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Email hoặc mật khẩu không chính xác');

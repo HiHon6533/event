@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { FiCheckCircle, FiXCircle, FiLoader, FiArrowRight, FiHome } from 'react-icons/fi';
+import { HiCheckCircle, HiXCircle, HiHome, HiTicket } from 'react-icons/hi';
 
 export default function PaymentResultPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [status, setStatus] = useState('processing'); // processing, success, failed
+  const [status, setStatus] = useState('processing');
   const [message, setMessage] = useState('');
   const [bookingCode, setBookingCode] = useState('');
+  const [bookingId, setBookingId] = useState(null);
+  const [transactionId, setTransactionId] = useState('');
 
   useEffect(() => {
     const processPaymentReturn = async () => {
@@ -23,21 +25,22 @@ export default function PaymentResultPage() {
           return;
         }
 
-        // Add a slight artificial delay for better UX on fast connections
-        await new Promise(resolve => setTimeout(resolve, 800));
+        await new Promise(resolve => setTimeout(resolve, 1200));
 
         const res = await fetch(`http://localhost:8080/api/payment/vnpay-return?${new URLSearchParams(params).toString()}`);
         const data = await res.json();
-        
+
         if (data.status === 'SUCCESS') {
           setStatus('success');
           setMessage(data.message || 'Giao dịch của bạn đã được xác nhận.');
           setBookingCode(data.bookingCode);
+          setBookingId(data.bookingId);
+          setTransactionId(data.transactionId || '');
         } else {
           setStatus('failed');
           setMessage(data.message || 'Giao dịch không thành công hoặc đã bị hủy.');
         }
-      } catch (err) {
+      } catch {
         setStatus('failed');
         setMessage('Lỗi khi kết nối đến hệ thống. Vui lòng kiểm tra lại sau.');
       }
@@ -47,92 +50,210 @@ export default function PaymentResultPage() {
   }, [searchParams]);
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center p-4">
-      <div 
-        className="relative w-full max-w-lg p-8 rounded-3xl overflow-hidden shadow-2xl slide-up"
-        style={{
-          background: 'rgba(30, 41, 59, 0.7)',
-          backdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255,255,255,0.1)'
-        }}
-      >
-        {/* Decorative background glows */}
-        <div className={`absolute -top-32 -left-32 w-64 h-64 rounded-full blur-3xl opacity-20 transition-colors duration-1000 ${status === 'success' ? 'bg-green-500' : status === 'failed' ? 'bg-red-500' : 'bg-sky-500'}`} />
-        <div className={`absolute -bottom-32 -right-32 w-64 h-64 rounded-full blur-3xl opacity-20 transition-colors duration-1000 ${status === 'success' ? 'bg-green-500' : status === 'failed' ? 'bg-red-500' : 'bg-sky-500'}`} />
+    <div style={{
+      minHeight: '85vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px',
+    }}>
+      <div className="slide-up" style={{
+        position: 'relative',
+        width: '100%',
+        maxWidth: '520px',
+        borderRadius: '24px',
+        overflow: 'hidden',
+        boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        background: 'var(--bg-card)',
+      }}>
+        {/* Glow effect */}
+        <div style={{
+          position: 'absolute', top: '-100px', left: '-100px',
+          width: '260px', height: '260px', borderRadius: '50%',
+          filter: 'blur(80px)', opacity: 0.15, pointerEvents: 'none',
+          background: status === 'success' ? '#10b981' : status === 'failed' ? '#ef4444' : '#6c5ce7',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: '-100px', right: '-100px',
+          width: '260px', height: '260px', borderRadius: '50%',
+          filter: 'blur(80px)', opacity: 0.15, pointerEvents: 'none',
+          background: status === 'success' ? '#10b981' : status === 'failed' ? '#ef4444' : '#6c5ce7',
+        }} />
 
-        <div className="relative z-10 text-center">
-          
-          {/* PROCESSING STATE */}
+        <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '40px 32px' }}>
+
+          {/* ═══ PROCESSING ═══ */}
           {status === 'processing' && (
-            <div className="py-12 animate-pulse">
-              <div className="w-24 h-24 bg-sky-500/10 rounded-full flex items-center justify-center mx-auto mb-8 relative">
-                <FiLoader className="w-10 h-10 text-sky-400 animate-spin" />
-                <div className="absolute inset-0 rounded-full border-t-2 border-sky-400/50 animate-spin" style={{ animationDuration: '2s' }}></div>
+            <div>
+              <div style={{
+                width: '90px', height: '90px', borderRadius: '50%',
+                background: 'rgba(108, 92, 231, 0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 28px',
+                border: '3px solid rgba(108, 92, 231, 0.3)',
+                animation: 'spin 1.5s linear infinite',
+              }}>
+                <span style={{ fontSize: '2.5rem' }}>⏳</span>
               </div>
-              <h2 className="text-3xl font-bold text-white mb-4 tracking-tight">Đang xử lý thanh toán</h2>
-              <p className="text-slate-400 text-lg">Hệ thống đang xác thực giao dịch với VNPay.<br/>Vui lòng đợi trong giây lát...</p>
+              <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '12px' }}>
+                Đang xử lý thanh toán
+              </h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '1rem', lineHeight: 1.6 }}>
+                Hệ thống đang xác thực giao dịch với VNPay.<br />
+                Vui lòng đợi trong giây lát...
+              </p>
             </div>
           )}
 
-          {/* SUCCESS STATE */}
+          {/* ═══ SUCCESS ═══ */}
           {status === 'success' && (
-            <div className="py-6 slide-up">
-              <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(52,211,153,0.3)]">
-                <FiCheckCircle className="w-12 h-12 text-white" />
+            <div className="fade-in">
+              {/* Icon */}
+              <div style={{
+                width: '96px', height: '96px', borderRadius: '50%',
+                background: 'linear-gradient(135deg, #10b981, #34d399)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 24px',
+                boxShadow: '0 0 40px rgba(16, 185, 129, 0.3)',
+              }}>
+                <HiCheckCircle size={52} color="white" />
               </div>
-              
-              <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500 mb-3 tracking-tight">Thanh toán thành công!</h2>
-              <p className="text-slate-300 text-lg mb-8">{message}</p>
-              
+
+              {/* Title */}
+              <h2 style={{
+                fontSize: '1.8rem', fontWeight: 800, marginBottom: '8px',
+                background: 'linear-gradient(135deg, #10b981, #34d399)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+              }}>
+                Thanh toán thành công!
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '28px' }}>
+                {message}
+              </p>
+
+              {/* Ticket card */}
               {bookingCode && (
-                <div className="bg-slate-900/80 p-6 rounded-2xl mb-8 border border-green-500/20 shadow-inner relative overflow-hidden group hover:border-green-500/40 transition-colors">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 blur-2xl rounded-full transform translate-x-10 -translate-y-10 group-hover:bg-green-500/20 transition-all"></div>
-                  <span className="text-sm text-slate-400 font-medium block mb-2 uppercase tracking-wide">Mã vé của bạn</span>
-                  <div className="flex items-center justify-center gap-3 relative z-10">
-                    <span className="text-3xl font-black text-white font-mono tracking-widest">{bookingCode}</span>
-                  </div>
+                <div style={{
+                  background: 'rgba(16, 185, 129, 0.06)',
+                  border: '1px dashed rgba(16, 185, 129, 0.35)',
+                  borderRadius: '16px',
+                  padding: '24px',
+                  marginBottom: '12px',
+                }}>
+                  <span style={{
+                    display: 'block', fontSize: '0.8rem', fontWeight: 600,
+                    color: 'var(--text-muted)', textTransform: 'uppercase',
+                    letterSpacing: '1.5px', marginBottom: '8px',
+                  }}>Mã đơn hàng</span>
+                  <span style={{
+                    display: 'block', fontSize: '2rem', fontWeight: 900,
+                    color: 'var(--text-primary)', fontFamily: 'monospace',
+                    letterSpacing: '4px',
+                  }}>{bookingCode}</span>
                 </div>
               )}
-              
-              <div className="flex flex-col gap-3">
-                <Link to="/my-bookings" className="btn btn-primary w-full flex items-center justify-center gap-2 group text-lg p-4">
+
+              {transactionId && (
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: '28px' }}>
+                  Mã giao dịch VNPay: <strong style={{ color: 'var(--text-secondary)' }}>{transactionId}</strong>
+                </p>
+              )}
+
+              <p style={{
+                color: 'var(--success)', fontSize: '0.9rem', marginBottom: '28px',
+                background: 'rgba(16, 185, 129, 0.08)', padding: '12px 16px', borderRadius: '12px',
+              }}>
+                ✉️ Vé điện tử (QR Code) đã được gửi đến email của bạn!
+              </p>
+
+              {/* Buttons */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <Link
+                  to={bookingId ? `/bookings/${bookingId}` : '/my-bookings'}
+                  className="btn btn-primary"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '14px', fontSize: '1.05rem' }}
+                >
+                  <HiTicket size={20} />
                   Xem chi tiết vé
-                  <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <Link to="/" className="btn w-full bg-slate-800 hover:bg-slate-700 focus:ring-slate-700 text-slate-300 border border-slate-700 flex items-center justify-center gap-2 p-4">
-                  <FiHome />
+                <Link
+                  to="/"
+                  className="btn"
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    padding: '14px', fontSize: '1rem',
+                    background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
+                    color: 'var(--text-secondary)',
+                  }}
+                >
+                  <HiHome size={18} />
                   Về trang chủ
                 </Link>
               </div>
             </div>
           )}
 
-          {/* FAILED STATE */}
+          {/* ═══ FAILED ═══ */}
           {status === 'failed' && (
-            <div className="py-6 slide-up">
-              <div className="w-24 h-24 bg-gradient-to-br from-red-500 to-rose-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(239,68,68,0.3)]">
-                <FiXCircle className="w-12 h-12 text-white" />
-              </div>
-              
-              <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-rose-500 mb-3 tracking-tight">Thanh toán thất bại</h2>
-              <p className="text-slate-300 text-lg mb-8">{message}</p>
-              
-              <div className="bg-red-500/10 p-6 rounded-2xl mb-8 border border-red-500/20 text-left">
-                 <p className="text-slate-300 text-sm leading-relaxed text-center">
-                   Giao dịch không thể hoàn tất. Vui lòng kiểm tra lại số dư thẻ, hạn mức giao dịch hoặc thử lại bằng một phương thức thanh toán khác.<br/><br/> Đơn đặt vé của bạn chưa bị trừ tiền.
-                 </p>
+            <div className="fade-in">
+              {/* Icon */}
+              <div style={{
+                width: '96px', height: '96px', borderRadius: '50%',
+                background: 'linear-gradient(135deg, #ef4444, #f87171)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 24px',
+                boxShadow: '0 0 40px rgba(239, 68, 68, 0.3)',
+              }}>
+                <HiXCircle size={52} color="white" />
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button 
-                  onClick={() => navigate(-1)} 
-                  className="btn bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 flex-1 py-3 text-base flex items-center justify-center gap-2"
+              {/* Title */}
+              <h2 style={{
+                fontSize: '1.8rem', fontWeight: 800, marginBottom: '8px',
+                background: 'linear-gradient(135deg, #ef4444, #f87171)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+              }}>
+                Thanh toán thất bại
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '28px' }}>
+                {message}
+              </p>
+
+              {/* Info box */}
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.06)',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
+                borderRadius: '16px',
+                padding: '20px',
+                marginBottom: '28px',
+                textAlign: 'left',
+              }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', lineHeight: 1.7, margin: 0, textAlign: 'center' }}>
+                  Giao dịch không thể hoàn tất. Vui lòng kiểm tra lại số dư thẻ, hạn mức giao dịch hoặc thử lại bằng phương thức thanh toán khác.<br /><br />
+                  <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+                    💡 Đơn đặt vé của bạn chưa bị trừ tiền.
+                  </span>
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={() => navigate(-1)}
+                  className="btn"
+                  style={{
+                    flex: 1, padding: '14px', fontSize: '1rem',
+                    background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)',
+                    color: 'var(--text-secondary)', cursor: 'pointer',
+                  }}
                 >
-                  Thử lại
+                  ← Thử lại
                 </button>
-                <Link 
-                  to="/my-bookings" 
-                  className="btn btn-primary flex-1 py-3 text-base flex items-center justify-center gap-2"
+                <Link
+                  to="/my-bookings"
+                  className="btn btn-primary"
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '14px', fontSize: '1rem' }}
                 >
                   Đơn mua
                 </Link>
