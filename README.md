@@ -150,5 +150,5 @@ Event-Booking-System
 *Cảm ơn bạn đã quan tâm tới dự án!*
 
 ### Nhóm tác giả
-Phạm Hoài Nam - 23110127 
-Nguyễn Phúc Huy Hoàng - 23110100
+- Phạm Hoài Nam - 23110127
+- Nguyễn Phúc Huy Hoàng - 23110100
