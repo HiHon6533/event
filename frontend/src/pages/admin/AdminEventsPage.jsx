@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { eventApi, venueApi } from '../../services/api';
+import { eventApi, venueApi, uploadApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatDateTime, CATEGORY_LABELS, STATUS_LABELS, STATUS_COLORS } from '../../utils/helpers';
 import toast from 'react-hot-toast';
@@ -15,6 +15,7 @@ export default function AdminEventsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentEventId, setCurrentEventId] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     venueId: '',
     title: '',
@@ -25,8 +26,26 @@ export default function AdminEventsPage() {
     endTime: '',
     bannerUrl: '',
     thumbnailUrl: '',
+    imageUrl: '',
+    mapUrl: '',
+    organizerName: '',
+    organizerDescription: '',
+    organizerLogoUrl: '',
+    eventAddress: '',
     isFeatured: false
   });
+
+  // File states for upload
+  const [bannerFile, setBannerFile] = useState(null);
+  const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [mapFile, setMapFile] = useState(null);
+  const [organizerLogoFile, setOrganizerLogoFile] = useState(null);
+
+  // Preview URLs
+  const [bannerPreview, setBannerPreview] = useState('');
+  const [thumbnailPreview, setThumbnailPreview] = useState('');
+  const [mapPreview, setMapPreview] = useState('');
+  const [organizerLogoPreview, setOrganizerLogoPreview] = useState('');
 
   const loadData = async () => {
     setLoading(true);
@@ -53,12 +72,18 @@ export default function AdminEventsPage() {
     return (new Date(date - offset)).toISOString().slice(0, 16);
   };
 
+  const resetFileStates = () => {
+    setBannerFile(null); setThumbnailFile(null); setMapFile(null); setOrganizerLogoFile(null);
+    setBannerPreview(''); setThumbnailPreview(''); setMapPreview(''); setOrganizerLogoPreview('');
+  };
+
   const openModal = (event = null) => {
+    resetFileStates();
     if (event) {
       setIsEditMode(true);
       setCurrentEventId(event.id);
       setFormData({
-        venueId: event.venue?.id || '',
+        venueId: event.venueId || event.venue?.id || '',
         title: event.title || '',
         shortDescription: event.shortDescription || '',
         description: event.description || '',
@@ -67,8 +92,19 @@ export default function AdminEventsPage() {
         endTime: formatForInput(event.endTime),
         bannerUrl: event.bannerUrl || '',
         thumbnailUrl: event.thumbnailUrl || '',
+        imageUrl: event.imageUrl || '',
+        mapUrl: event.mapUrl || '',
+        organizerName: event.organizerName || '',
+        organizerDescription: event.organizerDescription || '',
+        organizerLogoUrl: event.organizerLogoUrl || '',
+        eventAddress: event.eventAddress || '',
         isFeatured: event.isFeatured || false
       });
+      // Set existing image previews
+      if (event.bannerUrl) setBannerPreview(event.bannerUrl);
+      if (event.thumbnailUrl) setThumbnailPreview(event.thumbnailUrl);
+      if (event.mapUrl) setMapPreview(event.mapUrl);
+      if (event.organizerLogoUrl) setOrganizerLogoPreview(event.organizerLogoUrl);
     } else {
       setIsEditMode(false);
       setCurrentEventId(null);
@@ -82,26 +118,71 @@ export default function AdminEventsPage() {
         endTime: '',
         bannerUrl: '',
         thumbnailUrl: '',
+        imageUrl: '',
+        mapUrl: '',
+        organizerName: '',
+        organizerDescription: '',
+        organizerLogoUrl: '',
+        eventAddress: '',
         isFeatured: false
       });
     }
     setIsModalOpen(true);
   };
 
+  const handleFileSelect = (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const previewUrl = URL.createObjectURL(file);
+    switch (type) {
+      case 'banner':
+        setBannerFile(file); setBannerPreview(previewUrl);
+        break;
+      case 'thumbnail':
+        setThumbnailFile(file); setThumbnailPreview(previewUrl);
+        break;
+      case 'map':
+        setMapFile(file); setMapPreview(previewUrl);
+        break;
+      case 'organizerLogo':
+        setOrganizerLogoFile(file); setOrganizerLogoPreview(previewUrl);
+        break;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
+      let eventId = currentEventId;
+
       if (isEditMode) {
         await eventApi.update(currentEventId, formData);
         toast.success('Cập nhật sự kiện thành công');
       } else {
-        await eventApi.create(formData);
+        const res = await eventApi.create(formData);
+        eventId = res.data.id;
         toast.success(isManager ? 'Tạo sự kiện thành công! Đang chờ Admin duyệt.' : 'Tạo sự kiện thành công');
       }
+
+      // Upload files if selected
+      const uploadPromises = [];
+      if (bannerFile) uploadPromises.push(uploadApi.eventBanner(eventId, bannerFile));
+      if (thumbnailFile) uploadPromises.push(uploadApi.eventThumbnail(eventId, thumbnailFile));
+      if (mapFile) uploadPromises.push(uploadApi.eventMap(eventId, mapFile));
+      if (organizerLogoFile) uploadPromises.push(uploadApi.eventOrganizerLogo(eventId, organizerLogoFile));
+
+      if (uploadPromises.length > 0) {
+        await Promise.all(uploadPromises);
+        toast.success('Upload ảnh thành công!');
+      }
+
       setIsModalOpen(false);
       loadData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Có lỗi xảy ra');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -147,6 +228,40 @@ export default function AdminEventsPage() {
     return actions;
   };
 
+  // Shared input styles
+  const inputStyle = { width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-lighter)', color: 'white', fontSize: '0.9rem' };
+  const textareaStyle = { ...inputStyle, resize: 'vertical', fontFamily: 'inherit' };
+  const labelStyle = { display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 500 };
+  const selectStyle = { ...inputStyle, background: 'var(--bg-card)' };
+
+  const ImageUploadField = ({ label, preview, existingUrl, onChange, hint }) => (
+    <div style={{ flex: 1 }}>
+      <label style={labelStyle}>{label}</label>
+      <div style={{
+        border: '2px dashed var(--border)', borderRadius: '12px', padding: '12px',
+        textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s',
+        background: preview ? 'rgba(108, 92, 231, 0.05)' : 'transparent',
+        position: 'relative', minHeight: 100, display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', gap: 8,
+      }}
+        onClick={() => document.getElementById(`file-${label}`)?.click()}
+        onDragOver={e => e.preventDefault()}
+        onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) onChange({ target: { files: [f] } }); }}
+      >
+        <input id={`file-${label}`} type="file" accept="image/*" onChange={onChange} style={{ display: 'none' }} />
+        {preview ? (
+          <img src={preview} alt="Preview" style={{ maxHeight: 80, maxWidth: '100%', borderRadius: 8, objectFit: 'cover' }} />
+        ) : (
+          <>
+            <span style={{ fontSize: '1.8rem', opacity: 0.5 }}>📷</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Kéo thả hoặc click để chọn ảnh</span>
+          </>
+        )}
+        {hint && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{hint}</span>}
+      </div>
+    </div>
+  );
+
   return (
     <>
       <div className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -179,8 +294,10 @@ export default function AdminEventsPage() {
                   <td>{CATEGORY_LABELS[e.category] || e.category}</td>
                   {isAdmin && (
                     <td>
-                      {e.managerName ? (
-                        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>🏢 {e.managerName}</span>
+                      {e.organizerName ? (
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>🏢 {e.organizerName}</span>
+                      ) : e.managerName ? (
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>👤 {e.managerName}</span>
                       ) : (
                         <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>— Admin</span>
                       )}
@@ -215,79 +332,137 @@ export default function AdminEventsPage() {
 
       {isModalOpen && createPortal(
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', width: '90%', maxWidth: '650px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)' }}>
-            <div style={{ padding: '24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'var(--bg-card)', zIndex: 10 }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', width: '90%', maxWidth: '780px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)' }}>
+            <div style={{ padding: '24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'var(--bg-card)', zIndex: 10, borderRadius: '16px 16px 0 0' }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>{isEditMode ? 'Sửa sự kiện' : 'Tạo sự kiện mới'}</h2>
+                <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>{isEditMode ? '✏️ Sửa sự kiện' : '🎉 Tạo sự kiện mới'}</h2>
                 {isManager && !isEditMode && <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#e67e22' }}>⏳ Sự kiện sẽ ở trạng thái "Chờ duyệt" sau khi tạo</p>}
               </div>
               <button style={{ background: 'var(--bg-lighter)', border: 'none', color: 'var(--text-secondary)', fontSize: '1.2rem', cursor: 'pointer', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setIsModalOpen(false)}>&times;</button>
             </div>
             
             <form onSubmit={handleSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div className="form-group">
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Tên sự kiện</label>
-                <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required className="form-control" style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-lighter)', color: 'white' }} />
+              
+              {/* ── Section 1: Thông tin cơ bản ── */}
+              <div style={{ padding: '16px', background: 'rgba(108, 92, 231, 0.06)', borderRadius: '12px', border: '1px solid rgba(108, 92, 231, 0.15)' }}>
+                <h3 style={{ margin: '0 0 16px', fontSize: '0.95rem', color: 'var(--primary-light)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>📋 Thông tin cơ bản</h3>
+
+                <div className="form-group" style={{ marginBottom: 16 }}>
+                  <label style={labelStyle}>Tên sự kiện <span style={{ color: '#e74c3c' }}>*</span></label>
+                  <input type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required style={inputStyle} placeholder="Nhập tên sự kiện..." />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: 16 }}>
+                  <div className="form-group">
+                    <label style={labelStyle}>Thể loại <span style={{ color: '#e74c3c' }}>*</span></label>
+                    <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} required style={selectStyle}>
+                      {Object.entries(CATEGORY_LABELS).map(([key, val]) => <option key={key} value={key} style={{ background: 'var(--bg-card)', color: 'white' }}>{val}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label style={labelStyle}>Địa điểm tổ chức <span style={{ color: '#e74c3c' }}>*</span></label>
+                    <select value={formData.venueId} onChange={e => setFormData({...formData, venueId: e.target.value})} required style={selectStyle}>
+                      {venues.map(v => <option key={v.id} value={v.id} style={{ background: 'var(--bg-card)', color: 'white' }}>{v.name}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 16 }}>
+                  <label style={labelStyle}>📍 Địa chỉ sự kiện chi tiết</label>
+                  <input type="text" value={formData.eventAddress} onChange={e => setFormData({...formData, eventAddress: e.target.value})} style={inputStyle} placeholder="VD: Sảnh A, Tầng 3 - Nhà Văn Hóa Thanh Niên, Quận 1, TP.HCM" />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div className="form-group">
+                    <label style={labelStyle}>Thời gian bắt đầu <span style={{ color: '#e74c3c' }}>*</span></label>
+                    <input type="datetime-local" value={formData.startTime} onChange={e => setFormData({...formData, startTime: e.target.value})} required style={inputStyle} />
+                  </div>
+                  <div className="form-group">
+                    <label style={labelStyle}>Thời gian kết thúc <span style={{ color: '#e74c3c' }}>*</span></label>
+                    <input type="datetime-local" value={formData.endTime} onChange={e => setFormData({...formData, endTime: e.target.value})} required style={inputStyle} />
+                  </div>
+                </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="form-group">
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Thể loại</label>
-                  <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="form-control" required style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'white' }}>
-                    {Object.entries(CATEGORY_LABELS).map(([key, val]) => <option key={key} value={key} style={{ background: 'var(--bg-card)', color: 'white' }}>{val}</option>)}
-                  </select>
+              {/* ── Section 2: Mô tả sự kiện ── */}
+              <div style={{ padding: '16px', background: 'rgba(0, 184, 148, 0.06)', borderRadius: '12px', border: '1px solid rgba(0, 184, 148, 0.15)' }}>
+                <h3 style={{ margin: '0 0 16px', fontSize: '0.95rem', color: '#00b894', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>📝 Thông tin sự kiện</h3>
+
+                <div className="form-group" style={{ marginBottom: 16 }}>
+                  <label style={labelStyle}>Mô tả ngắn gọn</label>
+                  <textarea rows="2" value={formData.shortDescription} onChange={e => setFormData({...formData, shortDescription: e.target.value})} style={textareaStyle} placeholder="Mô tả ngắn hiển thị trên card sự kiện..." />
                 </div>
+
                 <div className="form-group">
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Địa điểm tổ chức</label>
-                  <select value={formData.venueId} onChange={e => setFormData({...formData, venueId: e.target.value})} className="form-control" required style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'white' }}>
-                    {venues.map(v => <option key={v.id} value={v.id} style={{ background: 'var(--bg-card)', color: 'white' }}>{v.name}</option>)}
-                  </select>
+                  <label style={labelStyle}>Mô tả chi tiết</label>
+                  <textarea rows="4" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} style={textareaStyle} placeholder="Nội dung chi tiết về sự kiện, chương trình, đối tượng..." />
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="form-group">
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Thời gian bắt đầu</label>
-                  <input type="datetime-local" value={formData.startTime} onChange={e => setFormData({...formData, startTime: e.target.value})} className="form-control" required style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-lighter)', color: 'white' }} />
+              {/* ── Section 3: Hình ảnh sự kiện ── */}
+              <div style={{ padding: '16px', background: 'rgba(9, 132, 227, 0.06)', borderRadius: '12px', border: '1px solid rgba(9, 132, 227, 0.15)' }}>
+                <h3 style={{ margin: '0 0 16px', fontSize: '0.95rem', color: '#0984e3', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>🖼️ Hình ảnh sự kiện</h3>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: 16 }}>
+                  <ImageUploadField 
+                    label="Ảnh Banner (Lớn)" 
+                    preview={bannerPreview} 
+                    onChange={e => handleFileSelect(e, 'banner')} 
+                    hint="1200×400px khuyến nghị" 
+                  />
+                  <ImageUploadField 
+                    label="Ảnh Thumbnail (Nhỏ)" 
+                    preview={thumbnailPreview} 
+                    onChange={e => handleFileSelect(e, 'thumbnail')} 
+                    hint="400×300px khuyến nghị" 
+                  />
                 </div>
-                <div className="form-group">
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Thời gian kết thúc</label>
-                  <input type="datetime-local" value={formData.endTime} onChange={e => setFormData({...formData, endTime: e.target.value})} className="form-control" required style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-lighter)', color: 'white' }} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+                  <ImageUploadField 
+                    label="Sơ đồ chỗ ngồi / Map" 
+                    preview={mapPreview} 
+                    onChange={e => handleFileSelect(e, 'map')} 
+                    hint="Ảnh sơ đồ venue/chỗ ngồi (tuỳ chọn)" 
+                  />
                 </div>
               </div>
 
-              <div className="form-group">
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Mô tả ngắn gọn</label>
-                <textarea rows="2" value={formData.shortDescription} onChange={e => setFormData({...formData, shortDescription: e.target.value})} className="form-control" style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-lighter)', color: 'white' }} />
-              </div>
+              {/* ── Section 4: Thông tin Ban tổ chức ── */}
+              <div style={{ padding: '16px', background: 'rgba(253, 203, 110, 0.08)', borderRadius: '12px', border: '1px solid rgba(253, 203, 110, 0.2)' }}>
+                <h3 style={{ margin: '0 0 16px', fontSize: '0.95rem', color: '#fdcb6e', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>🏢 Thông tin Ban tổ chức</h3>
 
-              <div className="form-group">
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Mô tả chi tiết</label>
-                <textarea rows="4" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="form-control" style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-lighter)', color: 'white' }} />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div className="form-group">
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Link Ảnh Thumbnail (Nhỏ)</label>
-                  <input type="url" value={formData.thumbnailUrl} onChange={e => setFormData({...formData, thumbnailUrl: e.target.value})} className="form-control" style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-lighter)', color: 'white' }} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: 16 }}>
+                  <div className="form-group">
+                    <label style={labelStyle}>Tên Ban tổ chức</label>
+                    <input type="text" value={formData.organizerName} onChange={e => setFormData({...formData, organizerName: e.target.value})} style={inputStyle} placeholder="VD: Công ty ABC Entertainment" />
+                  </div>
+                  <ImageUploadField 
+                    label="Logo Ban tổ chức" 
+                    preview={organizerLogoPreview} 
+                    onChange={e => handleFileSelect(e, 'organizerLogo')} 
+                    hint="Logo 200×200px" 
+                  />
                 </div>
+
                 <div className="form-group">
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Link Ảnh Banner (Lớn)</label>
-                  <input type="url" value={formData.bannerUrl} onChange={e => setFormData({...formData, bannerUrl: e.target.value})} className="form-control" style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-lighter)', color: 'white' }} />
+                  <label style={labelStyle}>Thông tin Ban tổ chức</label>
+                  <textarea rows="3" value={formData.organizerDescription} onChange={e => setFormData({...formData, organizerDescription: e.target.value})} style={textareaStyle} placeholder="Giới thiệu về ban tổ chức, kinh nghiệm, liên hệ..." />
                 </div>
               </div>
 
               {/* Featured checkbox: Admin only */}
               {isAdmin && (
-                <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }}>
+                <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
                   <input type="checkbox" id="isFeatured" checked={formData.isFeatured} onChange={e => setFormData({...formData, isFeatured: e.target.checked})} style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
                   <label htmlFor="isFeatured" style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>Đánh dấu là "Sự kiện nổi bật" (🔥 Hot)</label>
                 </div>
               )}
 
               <div style={{ padding: '16px 0 0 0', display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid var(--border)' }}>
-                <button type="button" className="btn btn-secondary" style={{ padding: '10px 20px', background: 'var(--bg-lighter)', borderRadius: '8px', border: 'none', color: '#fff', cursor: 'pointer' }} onClick={() => setIsModalOpen(false)}>Hủy</button>
-                <button type="submit" className="btn btn-primary" style={{ padding: '10px 24px', background: 'var(--primary)', borderRadius: '8px', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: 600 }}>{isEditMode ? 'Lưu thay đổi' : 'Tạo sự kiện'}</button>
+                <button type="button" className="btn btn-secondary" style={{ padding: '10px 20px', background: 'var(--bg-lighter)', borderRadius: '8px', border: 'none', color: '#fff', cursor: 'pointer' }} onClick={() => setIsModalOpen(false)} disabled={submitting}>Hủy</button>
+                <button type="submit" className="btn btn-primary" style={{ padding: '10px 24px', background: 'var(--primary)', borderRadius: '8px', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: 600, opacity: submitting ? 0.7 : 1 }} disabled={submitting}>
+                  {submitting ? '⏳ Đang xử lý...' : isEditMode ? '💾 Lưu thay đổi' : '🚀 Tạo sự kiện'}
+                </button>
               </div>
             </form>
           </div>

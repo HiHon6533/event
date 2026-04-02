@@ -24,7 +24,13 @@ public class EventRequest {
 
     private String bannerUrl;
     private String thumbnailUrl;
+    private String imageUrl;
     private String mapUrl;
+
+    private String organizerName;
+    private String organizerDescription;
+    private String organizerLogoUrl;
+    private String eventAddress;
 
     @NotNull(message = "Thời gian bắt đầu không được để trống")
     private LocalDateTime startTime;

@@ -26,6 +26,8 @@ public class EventResponse {
     private Long venueId;
     private String venueName;
     private String venueCity;
+    private String organizerName;
+    private String eventAddress;
     private Long managerId;
     private String managerName;
     private LocalDateTime createdAt;

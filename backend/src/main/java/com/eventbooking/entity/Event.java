@@ -55,6 +55,18 @@ public class Event {
     @Column(name = "map_url")
     private String mapUrl;
 
+    @Column(name = "organizer_name", length = 200)
+    private String organizerName;
+
+    @Column(name = "organizer_description", columnDefinition = "TEXT")
+    private String organizerDescription;
+
+    @Column(name = "organizer_logo_url")
+    private String organizerLogoUrl;
+
+    @Column(name = "event_address", columnDefinition = "TEXT")
+    private String eventAddress;
+
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
