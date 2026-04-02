@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { userApi } from '../services/api';
+import { userApi, uploadApi } from '../services/api';
 import { formatDateTime, ROLE_LABELS, ROLE_COLORS } from '../utils/helpers';
 import toast from 'react-hot-toast';
-import { HiOutlineUser, HiOutlineMail, HiOutlinePhone, HiOutlinePencil, HiOutlineShieldCheck, HiOutlineCalendar } from 'react-icons/hi';
+import { HiOutlineUser, HiOutlineMail, HiOutlinePhone, HiOutlinePencil, HiOutlineShieldCheck, HiOutlineCalendar, HiOutlineCamera } from 'react-icons/hi';
 
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth();
@@ -14,6 +14,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef(null);
 
   useEffect(() => {
     if (!user) {
@@ -55,9 +57,48 @@ export default function ProfilePage() {
     }
   };
 
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Vui lòng chọn file ảnh');
+      return;
+    }
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Ảnh không được vượt quá 5MB');
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const res = await uploadApi.userAvatar(file);
+      const newAvatarUrl = res.data.url;
+      
+      // Update profile with new avatar URL
+      await userApi.updateProfile({ ...form, avatarUrl: newAvatarUrl });
+      await refreshUser();
+      
+      // Reload profile data
+      const profileRes = await userApi.getMe();
+      setProfileData(profileRes.data);
+      setForm(prev => ({ ...prev, avatarUrl: profileRes.data.avatarUrl || '' }));
+      
+      toast.success('Cập nhật ảnh đại diện thành công!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Upload ảnh thất bại');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   const isProfileComplete = profileData?.fullName && profileData?.phone;
 
   if (loadingProfile) return <div className="auth-page"><div className="spinner" /></div>;
+
+  const avatarUrl = profileData?.avatarUrl;
 
   return (
     <div className="auth-page" style={{ alignItems: 'flex-start', paddingTop: '60px' }}>
@@ -86,17 +127,56 @@ export default function ProfilePage() {
             padding: '0 32px 32px', 
             position: 'relative'
           }}>
-            {/* Avatar */}
-            <div style={{ 
-              width: 90, height: 90, borderRadius: '50%', 
-              background: 'linear-gradient(135deg, #6c5ce7, #a29bfe)', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', 
-              fontSize: '2.2rem', fontWeight: 800, color: '#fff',
-              border: '4px solid var(--bg-card)',
-              marginTop: -45, marginBottom: 16,
-              boxShadow: '0 4px 20px rgba(108, 92, 231, 0.4)'
-            }}>
-              {profileData?.fullName?.charAt(0) || '?'}
+            {/* Avatar with upload overlay */}
+            <div 
+              style={{ 
+                width: 90, height: 90, borderRadius: '50%', 
+                background: avatarUrl ? 'transparent' : 'linear-gradient(135deg, #6c5ce7, #a29bfe)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                fontSize: '2.2rem', fontWeight: 800, color: '#fff',
+                border: '4px solid var(--bg-card)',
+                marginTop: -45, marginBottom: 16,
+                boxShadow: '0 4px 20px rgba(108, 92, 231, 0.4)',
+                position: 'relative',
+                cursor: 'pointer',
+                overflow: 'hidden',
+              }}
+              onClick={() => avatarInputRef.current?.click()}
+              title="Bấm để thay đổi ảnh đại diện"
+            >
+              {avatarUrl ? (
+                <img 
+                  src={avatarUrl} 
+                  alt="Avatar" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} 
+                />
+              ) : (
+                profileData?.fullName?.charAt(0) || '?'
+              )}
+              
+              {/* Camera overlay */}
+              <div style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0,
+                height: '36px',
+                background: 'rgba(0,0,0,0.55)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'opacity 0.2s',
+                backdropFilter: 'blur(2px)',
+              }}>
+                {uploadingAvatar ? (
+                  <div className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} />
+                ) : (
+                  <HiOutlineCamera size={16} color="#fff" />
+                )}
+              </div>
+
+              <input 
+                ref={avatarInputRef}
+                type="file" 
+                accept="image/*" 
+                onChange={handleAvatarUpload} 
+                style={{ display: 'none' }} 
+              />
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>

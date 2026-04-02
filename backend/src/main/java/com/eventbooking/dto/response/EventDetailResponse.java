@@ -21,6 +21,10 @@ public class EventDetailResponse {
     private String thumbnailUrl;
     private String imageUrl;
     private String mapUrl;
+    private String organizerName;
+    private String organizerDescription;
+    private String organizerLogoUrl;
+    private String eventAddress;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private EventStatus status;

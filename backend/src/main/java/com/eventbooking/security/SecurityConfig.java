@@ -66,8 +66,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/ticket-categories/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers(HttpMethod.DELETE, "/api/ticket-categories/**").hasAnyRole("ADMIN", "MANAGER")
 
-                // Uploads: ADMIN + MANAGER
-                .requestMatchers(HttpMethod.POST, "/api/upload/**").hasAnyRole("ADMIN", "MANAGER")
+                // Uploads: events/venues require ADMIN + MANAGER, user avatar requires authentication only
+                .requestMatchers(HttpMethod.POST, "/api/upload/events/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers(HttpMethod.POST, "/api/upload/venues/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/upload/users/**").authenticated()
 
                 // Bookings admin view: ADMIN + MANAGER
                 .requestMatchers("/api/bookings/admin/**").hasAnyRole("ADMIN", "MANAGER")

@@ -121,4 +121,22 @@ export const dashboardApi = {
   getStats: () => api.get('/dashboard'),
 };
 
+// ── File Uploads ───────────────────────────────
+const uploadFile = (url, file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return api.post(url, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
+
+export const uploadApi = {
+  eventBanner: (eventId, file) => uploadFile(`/upload/events/${eventId}/banner`, file),
+  eventThumbnail: (eventId, file) => uploadFile(`/upload/events/${eventId}/thumbnail`, file),
+  eventMap: (eventId, file) => uploadFile(`/upload/events/${eventId}/map`, file),
+  eventImage: (eventId, file) => uploadFile(`/upload/events/${eventId}/image`, file),
+  eventOrganizerLogo: (eventId, file) => uploadFile(`/upload/events/${eventId}/organizer-logo`, file),
+  userAvatar: (file) => uploadFile('/upload/users/avatar', file),
+};
+
 export default api;

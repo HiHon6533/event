@@ -171,7 +171,12 @@ public class EventServiceImpl implements EventService {
                 .category(request.getCategory())
                 .bannerUrl(request.getBannerUrl())
                 .thumbnailUrl(request.getThumbnailUrl())
+                .imageUrl(request.getImageUrl())
                 .mapUrl(request.getMapUrl())
+                .organizerName(request.getOrganizerName())
+                .organizerDescription(request.getOrganizerDescription())
+                .organizerLogoUrl(request.getOrganizerLogoUrl())
+                .eventAddress(request.getEventAddress())
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
                 .status(initialStatus)
@@ -204,7 +209,12 @@ public class EventServiceImpl implements EventService {
         event.setCategory(request.getCategory());
         event.setBannerUrl(request.getBannerUrl());
         event.setThumbnailUrl(request.getThumbnailUrl());
+        event.setImageUrl(request.getImageUrl());
         event.setMapUrl(request.getMapUrl());
+        event.setOrganizerName(request.getOrganizerName());
+        event.setOrganizerDescription(request.getOrganizerDescription());
+        event.setOrganizerLogoUrl(request.getOrganizerLogoUrl());
+        event.setEventAddress(request.getEventAddress());
         event.setStartTime(request.getStartTime());
         event.setEndTime(request.getEndTime());
         if (request.getIsFeatured() != null) event.setIsFeatured(request.getIsFeatured());
