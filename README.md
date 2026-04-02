@@ -1,26 +1,6 @@
-# Hệ Thống Đặt Vé Sự Kiện (Event Booking System)
+# BÁO CÁO HƯỚNG DẪN CÀI ĐẶT VÀ KIỂM THỬ HỆ THỐNG ĐẶT VÉ SỰ KIỆN
 
-Một nền tảng quản lý và bán vé sự kiện toàn diệ. Hệ thống giúp kết nối các Nhà tổ chức sự kiện (Manager) với Khách hàng (User), hỗ trợ quy trình từ tạo sự kiện nhiều bước, quản lý sơ đồ chỗ ngồi, cho đến thanh toán trực tuyến và quét mã QR vé.
-
-## Tính Năng Nổi Bật
-
-### Cho Khách Hàng (User)
-*   **Trải nghiệm người dùng:** Giao diện tối (Dark mode) hiện đại, mượt mà và trực quan.
-*   **Khám phá sự kiện:** Xem danh sách, tìm kiếm thông minh thông qua từ khóa và duyệt các Sự kiện đang thịnh hành (Trending Events) với thao tác trượt tiện lợi.
-*   **Đặt vé nhanh chóng:** Chọn khu vực ghế ngồi dựa trên sơ đồ sân khấu thực tế và đặt mua vé.
-*   **Thanh toán an toàn:** Tích hợp cổng thanh toán trực tuyến VNPay Sandbox.
-*   **Quản lý vé:** Nhận và lưu vé dưới dạng mã QR sau khi thanh toán thành công để dễ dàng check-in.
-*   **Quản lý hồ sơ:** Đăng nhập, đăng ký nhanh chóng, cập nhật thông tin cá nhân và ảnh đại diện.
-
-### Cho Nhà Tổ Chức (Manager)
-*   **Đăng ký Nhà tổ chức:** Người dùng có thể nâng cấp tài khoản lên Manager bằng cách cập nhật đầy đủ thông tin (Họ tên, SĐT).
-*   **Trình tạo sự kiện (Wizard steps):** Tạo sự kiện thông qua luồng từng bước chuyên nghiệp: Thông tin cơ bản -> Thông tin Venue -> Khu vực chỗ ngồi -> Danh mục vé.
-*   **Quản lý truyền thông:** Tải lên banner, ảnh thu nhỏ (thumbnail) và sơ đồ chỗ ngồi.
-*   **Quản lý trạng thái:** Theo dõi trạng thái duyệt sự kiện từ Admin, quản lý danh sách vé đã bán.
-
-### Cho Quản Trị Viên (Admin)
-*   **Kiểm duyệt nội dung:** Phê duyệt hoặc từ chối các sự kiện do Manager đăng tải đảm bảo chất lượng hệ thống.
-*   **Quản lý hệ thống:** Giám sát người dùng và các giao dịch đặt vé trên nền tảng.
+Tài liệu này cung cấp hướng dẫn chi tiết từng bước để cài đặt, khởi chạy dự án và kịch bản (workflow) kiểm thử toàn diện tất cả các tính năng cốt lõi của hệ thống, dành cho các vai trò: Khách hàng (User), Nhà tổ chức (Manager) và Quản trị viên (Admin).
 
 ---
 
@@ -108,22 +88,139 @@ CREATE DATABASE event_booking;
 
 ---
 
-## Hướng Dẫn Sử Dụng Cơ Bản (Usage)
-
-> **Lưu ý thao tác dữ liệu:** Dự án được thiết lập ở chế độ làm việc với dữ liệu thực tế (`spring.sql.init.mode=never`). Sẽ không có dữ liệu mồi (Data seeding) được khởi tạo tự động (như tài khoản admin, banner). Bạn phải tạo tài khoản và tự thêm sự kiện để sử dụng.
-
-### Quy Trình Dành Cho Nhà Tổ Chức Mới
-1.  Truy cập hệ thống và nhấn **Đăng ký** tài khoản mới dưới quyền User thông thường.
-2.  Đi tới khu vực **Hồ sơ (Profile)** và cập nhật đầy đủ **Họ tên** và **Số điện thoại**.
-3.  Nhấn nút **Đăng ký làm Nhà tổ chức** để nâng cấp quyền lên Manager (Có thể yêu cầu đăng xuất & đăng nhập lại để làm mới token).
-4.  Cập nhật đầy đủ thông tin nhà tổ chức.
-5.  Truy cập Dashboard, dùng **Trình tạo sự kiện đa bước (Wizard)** để thiết lập sơ đồ, giá vé, tải lên logo và banner sự kiện.
-6.  Chờ Admin duyệt sự kiện trước khi được public cho Khách hàng.
-
-### Chức Năng Của Admin
-Bạn có thể can thiệp thẳng vào DB hoặc tạo tài khoản, sau đó vào bảng `users` cập nhật cột `role` rành `ROLE_ADMIN` để có quyền cao nhất nhằm duyệt các sự kiện đang chờ duyệt.
 
 ---
+
+
+
+## KỊCH BẢN KIỂM THỬ TOÀN DIỆN (COMPREHENSIVE TESTING WORKFLOWS)
+
+
+
+Lưu ý: Hệ thống không có sẵn dữ liệu mẫu. Quá trình test phải mô phỏng thao tác người dùng từ con số 0.
+
+
+
+### Kịch Bản 1: Trải Nghiệm Khách Hàng (User) - Tạo Tài Khoản Mới
+
+1. Truy cập giao diện ứng dụng tại `http://localhost:5173`.
+
+2. Bấm vào **"Đăng nhập"** (Login), sau đó chọn **"Đăng ký ngay"** (Sign Up) để tạo tài khoản thường.
+
+3. Nhập Email và Mật khẩu hợp lệ -> Tạo tài khoản thành công.
+
+4. Hệ thống chuyển hướng tự động sang đăng nhập. Nhập tài khoản vừa tạo để truy cập vào hệ thống.
+
+5. Truy cập phần **Hồ sơ cá nhân (Profile)**. Thực hiện cập nhật các thông tin bắt buộc: **Họ tên** và **Số điện thoại**. Thử tải ảnh lên để kiểm tra chức năng upload Avatar.
+
+
+
+### Kịch Bản 2: Đăng Ký Hệ Sinh Thái Nhà Tổ Chức (Manager)
+
+*(Yêu cầu thực hiện tiếp từ Kịch Bản 1 sau khi đã cập nhật đủ Hồ sơ cá nhân)*
+
+1. Tại trang **Profile**, chọn nút **"Đăng ký làm Nhà tổ chức"**.
+
+2. Điền thông tin về tên tổ chức, mô tả hoạt động.
+
+3. Chờ vài giây để hệ thống lưu.
+
+4. **Log out (Đăng xuất) và đăng nhập lại** để làm mới quyền (Role) trong hệ thống sang `ROLE_MANAGER`.
+
+5. Đăng nhập lại. Bạn sẽ thấy góc menu báo hiệu bạn hiện là Manager và có mục truy cập "Dashboard" (Bảng điều khiển).
+
+
+
+### Kịch Bản 3: Trình Tạo Sự Kiện Đa Bước (Manager Workflow)
+
+*(Với tài khoản Manager từ cấu hình trên)*
+
+1. Truy cập **Dashboard (Bảng điều khiển)** -> Nhấn tạo Sự kiện mới.
+
+2. Hệ thống sẽ mở một màn hình Wizard đa bước:
+
+    - **Bước 1 (Basic Info):** Nhập Tên sự kiện, chọn Danh mục (Thể thao, Ca nhạc, v.v.), nhập Mô tả chi tiết và tên/địa chỉ nhà Tổ chức.
+
+    - **Bước 2 (Venue & Date):** Nhập ngày giờ bắt đầu và kết thúc sự kiện, ngày mở bán vé. Điền cụ thể Địa điểm tổ chức.
+
+    - **Bước 3 (Media):** Upload hình ảnh Banner, ảnh Thumbnail và Sơ đồ chọn chỗ (Bản đồ/Sơ đồ khu vực).
+
+    - **Bước 4 (Zones & Categories):** Khai báo các loại vé (Ví dụ: VIP, VVIP, Standard). Giá vé cho từng Zone, và số lượng vé phát hành.
+
+3. Nhập xong, bấm **"Gửi duyệt"**. Sự kiện sẽ ở trạng thái Pending (Đang chờ duyệt).
+
+
+
+### Kịch Bản 4: Quản Trị Viên Xét Duyệt (Admin Workflow)
+
+*(Bạn chưa có tài khoản Admin sẵn, do đó sẽ dùng Workaround)*
+
+1. Tự tạo một tài khoản mới bất kỳ qua trang Đăng ký (VD: `admin@gmail.com`).
+
+2. Mở Database (Dùng Dbeaver hoặc MySQL Workbench), mở bảng `users`.
+
+3. Tìm dòng record chứa tài khoản `admin@gmail.com`, sửa trường `role` từ `ROLE_USER` thành `ROLE_ADMIN`.
+
+4. Đăng nhập lại trên web bằng tài khoản `admin@gmail.com` vừa cấu hình. Bạn sẽ thấy Menu Admin.
+
+5. Truy cập **Quản lý Sự Kiện (Event Manager)** trên menu Admin:
+
+   - Hệ thống liệt kê Sự kiện đang Pending (bạn vừa tạo bên Manager).
+
+   - Click vào xem chi tiết, chọn **Phê duyệt (Approve)**. Trạng thái sự kiện đổi qua PUBLISHED (hoặc UPCOMING).
+
+
+
+### Kịch Bản 5: Nhập Vai Khách Mua Vé & Thanh Toán Nâng Cao
+
+*(Thoát tài khoản Admin, đăng nhập lại bằng 1 tài khoản thường để đóng vai Khách)*
+
+1. Quay trở lại Trang chủ hệ thống. Kéo khu vực **Trending Events**.
+
+   - Kiểm tra xem sự kiện mới tạo có hiện lên kèm hình ảnh đầy đủ không.
+
+   - Thử thanh tìm kiếm bằng cách gộp chữ hoa/chữ thường, xem hệ thống có tìm đúng sự kiện hay không.
+
+2. Bấm vào chi tiết sự kiện đã tạo.
+
+   - Hệ thống hiển thị mô tả, banner, sơ đồ Venue.
+
+   - Các loại vé sẽ hiển thị mức giá. Chọn số lượng vé bất kỳ.
+
+3. Tiến hành **Thanh Toán (Checkout)**:
+
+   - Hệ thống hiển thị tích hợp Sandbox VNPay (nếu đã cấu hình).
+
+   - Chọn tiến hành thanh toán nội địa và nhập các mã test Sandbox thông thường của VNPay:
+
+     Ngân hàng: NCB, Số thẻ: 9704198526191432198, Tên: NGUYEN VAN A.
+
+   - Thanh toán báo thành công (Payment Successful).
+
+4. Hệ thống sẽ tự động chuyển trang từ vnpay_return sang giao diện hóa đơn kết quả chi tiết kèm mã mua hàng.
+
+
+
+### Kịch Bản 6: Quản Lý Hệ Thống Vé Mã QR (Cuối Trình Testing)
+
+1. Truy cập mục **Vé của tôi (My Tickets)** tại giao diện User.
+
+2. Kiểm tra xem chiếc vé vừa mua có xuất hiện trong danh sách hay không.
+
+3. Nhấp vào vé, thông tin chi tiết (Event con, Tên khách, Loại vé, Zone) và đặc biệt phải **hiển thị được Mã QR code** chứa UID của vé để sẵn sàng cho Check-in.
+
+4. Trở lại tài khoản hệ thống của **Manager** (Dashboard):
+
+   - Mở chi tiết sự kiện đã bán, chọn Tab Dashboard/Tickets.
+
+   - Xem số lượng giao dịch đã ghi nhận và số doanh thu cập nhật sau 1 lượt mua thực tế.
+
+
+
+---
+
+
+**Kết luận:** Nếu toàn bộ các bước nêu trên được thực hiện thành công và không ghi nhận thông báo lỗi trên Backend (Log) cũng như Console của Browser (Frontend), hệ thống đã vận hành hoàn hảo các luồng nghiệp vụ xương sống của nó. Bạn có thể mở rộng kiểm thử với email notification hoặc test performance nếu cần thiết.
 
 ## Cấu Trúc Thư Mục (Folder Structure)
 
