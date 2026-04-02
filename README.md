@@ -89,9 +89,6 @@ CREATE DATABASE event_booking;
 ---
 
 
----
-
-
 
 ## KỊCH BẢN KIỂM THỬ TOÀN DIỆN (COMPREHENSIVE TESTING WORKFLOWS)
 
