@@ -26,7 +26,7 @@ function AdminSidebar() {
       {/* Role Badge */}
       <div style={{ padding: '0 16px', marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-          <div style={{ width: 36, height: 36, borderRadius: '50%', background: isAdmin ? 'linear-gradient(135deg, #e74c3c, #c0392b)' : 'linear-gradient(135deg, #2980b9, #3498db)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 700, color: '#fff' }}>
+          <div style={{ width: 36, height: 36, borderRadius: '50%', background: isAdmin ? '#d81b2e' : '#181818', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 700, color: '#fff' }}>
             {user?.fullName?.charAt(0)}
           </div>
           <div>
@@ -94,13 +94,13 @@ function DashboardHome() {
   if (loading) return <div className="spinner" />;
 
   let cards = [
-    { icon: <HiOutlineCalendar />, label: 'Sự kiện', value: stats?.totalEvents || 0, color: '#6c5ce7' },
-    { icon: <HiOutlineTicket />, label: 'Đặt vé', value: stats?.totalBookings || 0, color: '#00cec9' },
+    { icon: <HiOutlineCalendar />, label: 'Sự kiện', value: stats?.totalEvents || 0, color: '#d81b2e' },
+    { icon: <HiOutlineTicket />, label: 'Đặt vé', value: stats?.totalBookings || 0, color: '#e0e0e0' },
     { icon: <HiOutlineChartBar />, label: 'Tổng Doanh Thu', value: formatCurrency(stats?.totalRevenue || 0), color: '#ffeaa7' },
   ];
 
   if (isAdmin) {
-    cards.splice(2, 0, { icon: <HiOutlineUsers />, label: 'Người dùng', value: stats?.totalUsers || 0, color: '#fd79a8' });
+    cards.splice(2, 0, { icon: <HiOutlineUsers />, label: 'Người dùng', value: stats?.totalUsers || 0, color: '#b01525' });
     if (stats?.pendingEvents > 0) {
       cards.push({ icon: <HiOutlineClock />, label: 'Chờ duyệt', value: stats.pendingEvents, color: '#e67e22' });
     }

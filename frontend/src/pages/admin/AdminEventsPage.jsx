@@ -283,7 +283,7 @@ export default function AdminEventsPage() {
       <div style={{
         border: '2px dashed var(--border)', borderRadius: '12px', padding: '12px',
         textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s',
-        background: preview ? 'rgba(108, 92, 231, 0.05)' : 'transparent',
+        background: preview ? 'rgba(216, 27, 46, 0.05)' : 'transparent',
         position: 'relative', minHeight: 100, display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center', gap: 8,
       }}
@@ -392,7 +392,7 @@ export default function AdminEventsPage() {
               <form onSubmit={handleSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
                 {/* ── Section 1: Thông tin cơ bản ── */}
-                <div style={{ padding: '16px', background: 'rgba(108, 92, 231, 0.06)', borderRadius: '12px', border: '1px solid rgba(108, 92, 231, 0.15)' }}>
+                <div style={{ padding: '16px', background: 'rgba(216, 27, 46, 0.06)', borderRadius: '12px', border: '1px solid rgba(216, 27, 46, 0.15)' }}>
                   <h3 style={{ margin: '0 0 16px', fontSize: '0.95rem', color: 'var(--primary-light)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>📋 Thông tin cơ bản</h3>
 
                   <div className="form-group" style={{ marginBottom: 16 }}>

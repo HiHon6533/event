@@ -107,7 +107,7 @@ export default function ProfilePage() {
         {/* Profile Header Card */}
         <div className="card" style={{ padding: 0, marginBottom: 24, overflow: 'visible', border: 'none', background: 'transparent' }}>
           <div style={{ 
-            background: 'linear-gradient(135deg, #6c5ce7 0%, #a29bfe 50%, #74b9ff 100%)', 
+            background: '#d81b2e', 
             borderRadius: '20px 20px 0 0', 
             padding: '40px 32px 60px',
             position: 'relative'
@@ -131,12 +131,12 @@ export default function ProfilePage() {
             <div 
               style={{ 
                 width: 90, height: 90, borderRadius: '50%', 
-                background: avatarUrl ? 'transparent' : 'linear-gradient(135deg, #6c5ce7, #a29bfe)',
+                background: avatarUrl ? 'transparent' : '#d81b2e',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', 
                 fontSize: '2.2rem', fontWeight: 800, color: '#fff',
                 border: '4px solid var(--bg-card)',
                 marginTop: -45, marginBottom: 16,
-                boxShadow: '0 4px 20px rgba(108, 92, 231, 0.4)',
+                boxShadow: '0 4px 20px rgba(216, 27, 46, 0.4)',
                 position: 'relative',
                 cursor: 'pointer',
                 overflow: 'hidden',
