@@ -1,5 +1,6 @@
 package com.eventbooking.dto.request;
 
+import com.eventbooking.entity.enums.ZoneType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -15,6 +16,9 @@ public class ZoneRequest {
     private String name;
 
     private String description;
+    
+    @NotNull(message = "Loại khu vực không được để trống")
+    private ZoneType type;
 
     @NotNull(message = "Sức chứa không được để trống")
     @Positive(message = "Sức chứa phải lớn hơn 0")
