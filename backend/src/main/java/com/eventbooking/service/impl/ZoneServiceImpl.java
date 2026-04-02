@@ -46,6 +46,7 @@ public class ZoneServiceImpl implements ZoneService {
                 .venue(venue)
                 .name(request.getName())
                 .description(request.getDescription())
+                .type(request.getType())
                 .capacity(request.getCapacity())
                 .sortOrder(request.getSortOrder() != null ? request.getSortOrder() : 0)
                 .isActive(true)
@@ -63,6 +64,7 @@ public class ZoneServiceImpl implements ZoneService {
 
         zone.setName(request.getName());
         zone.setDescription(request.getDescription());
+        zone.setType(request.getType());
         zone.setCapacity(request.getCapacity());
         if (request.getSortOrder() != null) zone.setSortOrder(request.getSortOrder());
 

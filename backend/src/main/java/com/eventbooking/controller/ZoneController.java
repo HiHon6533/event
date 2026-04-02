@@ -27,20 +27,20 @@ public class ZoneController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ZoneResponse> createZone(@Valid @RequestBody ZoneRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(zoneService.createZone(request));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ZoneResponse> updateZone(@PathVariable Long id,
                                                     @Valid @RequestBody ZoneRequest request) {
         return ResponseEntity.ok(zoneService.updateZone(id, request));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> deleteZone(@PathVariable Long id) {
         zoneService.deleteZone(id);
         return ResponseEntity.noContent().build();
