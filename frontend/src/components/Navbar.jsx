@@ -109,7 +109,7 @@ export default function Navbar() {
             onClick={handleCreateEventClick}
             style={{ 
               display: 'flex', alignItems: 'center', gap: 6,
-              background: 'linear-gradient(135deg, var(--primary), #8b5cf6)', 
+              background: 'var(--primary)', 
               color: '#fff', border: 'none', borderRadius: '20px', 
               padding: '6px 16px', cursor: 'pointer', fontWeight: 600, 
               fontSize: '0.85rem', whiteSpace: 'nowrap',

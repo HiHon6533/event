@@ -176,7 +176,7 @@ export default function EventConfigView({ event, onComplete }) {
   const inputStyle = { width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-lighter)', color: 'white', fontSize: '0.9rem' };
   const labelStyle = { display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: 500 };
   const tabBtnStyle = (active) => ({
-    flex: 1, padding: '12px', background: active ? 'rgba(108, 92, 231, 0.15)' : 'transparent',
+    flex: 1, padding: '12px', background: active ? 'rgba(216, 27, 46, 0.15)' : 'transparent',
     color: active ? 'var(--primary-light)' : 'var(--text-secondary)',
     border: 'none', borderBottom: active ? '3px solid var(--primary-light)' : '3px solid transparent',
     fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', fontSize: '1rem'
@@ -198,7 +198,7 @@ export default function EventConfigView({ event, onComplete }) {
           {/* TAB 1: TIMES */}
           {activeTab === 'times' && (
             <form onSubmit={handleTimesSubmit}>
-              <div style={{ padding: '16px', background: 'rgba(108, 92, 231, 0.06)', borderRadius: '12px', border: '1px solid rgba(108, 92, 231, 0.15)', marginBottom: 20 }}>
+              <div style={{ padding: '16px', background: 'rgba(216, 27, 46, 0.06)', borderRadius: '12px', border: '1px solid rgba(216, 27, 46, 0.15)', marginBottom: 20 }}>
                 <h3 style={{ margin: '0 0 16px', fontSize: '1rem', color: 'var(--primary-light)' }}>Điều chỉnh thời gian sự kiện</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div>

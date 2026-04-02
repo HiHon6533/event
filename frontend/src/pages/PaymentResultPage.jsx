@@ -72,13 +72,13 @@ export default function PaymentResultPage() {
           position: 'absolute', top: '-100px', left: '-100px',
           width: '260px', height: '260px', borderRadius: '50%',
           filter: 'blur(80px)', opacity: 0.15, pointerEvents: 'none',
-          background: status === 'success' ? '#10b981' : status === 'failed' ? '#ef4444' : '#6c5ce7',
+          background: status === 'success' ? '#2e8b57' : status === 'failed' ? '#ef4444' : '#d81b2e',
         }} />
         <div style={{
           position: 'absolute', bottom: '-100px', right: '-100px',
           width: '260px', height: '260px', borderRadius: '50%',
           filter: 'blur(80px)', opacity: 0.15, pointerEvents: 'none',
-          background: status === 'success' ? '#10b981' : status === 'failed' ? '#ef4444' : '#6c5ce7',
+          background: status === 'success' ? '#2e8b57' : status === 'failed' ? '#ef4444' : '#d81b2e',
         }} />
 
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '40px 32px' }}>
@@ -88,10 +88,10 @@ export default function PaymentResultPage() {
             <div>
               <div style={{
                 width: '90px', height: '90px', borderRadius: '50%',
-                background: 'rgba(108, 92, 231, 0.1)',
+                background: 'rgba(216, 27, 46, 0.1)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 margin: '0 auto 28px',
-                border: '3px solid rgba(108, 92, 231, 0.3)',
+                border: '3px solid rgba(216, 27, 46, 0.3)',
                 animation: 'spin 1.5s linear infinite',
               }}>
                 <span style={{ fontSize: '2.5rem' }}>⏳</span>
@@ -112,7 +112,7 @@ export default function PaymentResultPage() {
               {/* Icon */}
               <div style={{
                 width: '96px', height: '96px', borderRadius: '50%',
-                background: 'linear-gradient(135deg, #10b981, #34d399)',
+                background: '#2e8b57',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 margin: '0 auto 24px',
                 boxShadow: '0 0 40px rgba(16, 185, 129, 0.3)',
@@ -123,7 +123,7 @@ export default function PaymentResultPage() {
               {/* Title */}
               <h2 style={{
                 fontSize: '1.8rem', fontWeight: 800, marginBottom: '8px',
-                background: 'linear-gradient(135deg, #10b981, #34d399)',
+                background: '#2e8b57',
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
               }}>
                 Thanh toán thành công!
@@ -200,7 +200,7 @@ export default function PaymentResultPage() {
               {/* Icon */}
               <div style={{
                 width: '96px', height: '96px', borderRadius: '50%',
-                background: 'linear-gradient(135deg, #ef4444, #f87171)',
+                background: '#d81b2e',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 margin: '0 auto 24px',
                 boxShadow: '0 0 40px rgba(239, 68, 68, 0.3)',
@@ -211,7 +211,7 @@ export default function PaymentResultPage() {
               {/* Title */}
               <h2 style={{
                 fontSize: '1.8rem', fontWeight: 800, marginBottom: '8px',
-                background: 'linear-gradient(135deg, #ef4444, #f87171)',
+                background: '#d81b2e',
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
               }}>
                 Thanh toán thất bại
