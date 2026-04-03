@@ -12,6 +12,8 @@ import com.eventbooking.exception.ResourceNotFoundException;
 import com.eventbooking.mapper.BookingMapper;
 import com.eventbooking.repository.*;
 import com.eventbooking.service.BookingService;
+import com.eventbooking.service.SystemConfigService;
+import com.eventbooking.service.impl.SystemConfigServiceImpl;
 import com.eventbooking.security.SecurityUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +28,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Dịch vụ phụ trách nghiệp vụ Đặt vé (Booking), bao gồm kiểm tra trạng thái vé, tạo đơn, hủy đơn.
+ */
 @Service
 public class BookingServiceImpl implements BookingService {
 
@@ -34,6 +39,7 @@ public class BookingServiceImpl implements BookingService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final TicketCategoryRepository ticketCategoryRepository;
+    private final SystemConfigService systemConfigService;
     private final BookingMapper bookingMapper;
     private final SecurityUtils securityUtils;
 
@@ -42,6 +48,7 @@ public class BookingServiceImpl implements BookingService {
                              EventRepository eventRepository,
                              UserRepository userRepository,
                              TicketCategoryRepository ticketCategoryRepository,
+                             SystemConfigService systemConfigService,
                              BookingMapper bookingMapper,
                              SecurityUtils securityUtils) {
         this.bookingRepository = bookingRepository;
@@ -49,6 +56,7 @@ public class BookingServiceImpl implements BookingService {
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.ticketCategoryRepository = ticketCategoryRepository;
+        this.systemConfigService = systemConfigService;
         this.bookingMapper = bookingMapper;
         this.securityUtils = securityUtils;
     }
@@ -69,6 +77,7 @@ public class BookingServiceImpl implements BookingService {
                 .event(event)
                 .bookingCode(bookingCode)
                 .bookingDate(LocalDateTime.now())
+                .eventDate(request.getEventDate())
                 .status(BookingStatus.PENDING)
                 .note(request.getNote())
                 .qrSecretToken(null) // Assigned later when paid
@@ -114,6 +123,12 @@ public class BookingServiceImpl implements BookingService {
             tc.setRemainingQuantity(tc.getRemainingQuantity() - itemReq.getQuantity());
             ticketCategoryRepository.save(tc);
         }
+
+        // Apply Service Fee per ticket
+        String feeStr = systemConfigService.getConfigValue(SystemConfigServiceImpl.KEY_SERVICE_FEE, "0");
+        BigDecimal serviceFeePerTicket = new BigDecimal(feeStr);
+        BigDecimal totalServiceFee = serviceFeePerTicket.multiply(BigDecimal.valueOf(totalTickets));
+        totalAmount = totalAmount.add(totalServiceFee);
 
         booking.setTotalTickets(totalTickets);
         booking.setTotalAmount(totalAmount);

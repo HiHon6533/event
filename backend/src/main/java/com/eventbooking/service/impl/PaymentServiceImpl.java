@@ -12,12 +12,19 @@ import com.eventbooking.mapper.PaymentMapper;
 import com.eventbooking.repository.BookingRepository;
 import com.eventbooking.repository.PaymentRepository;
 import com.eventbooking.service.PaymentService;
+import com.eventbooking.dto.response.PageResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * Dịch vụ xử lý nghiệp vụ thanh toán vé sự kiện.
+ */
 @Service
 public class PaymentServiceImpl implements PaymentService {
 
@@ -33,6 +40,9 @@ public class PaymentServiceImpl implements PaymentService {
         this.paymentMapper = paymentMapper;
     }
 
+    /**
+     * Xử lý thanh toán. Kiểm tra quyền, trạng thái đơn hàng và mô phỏng giao dịch thành công.
+     */
     @Override
     @Transactional
     public PaymentResponse processPayment(Long userId, PaymentRequest request) {
@@ -67,11 +77,29 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentMapper.toResponse(payment);
     }
 
+    /**
+     * Lấy chi tiết thông tin giao dịch dựa trên ID của đơn đặt vé.
+     */
     @Override
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentByBookingId(Long bookingId) {
         Payment payment = paymentRepository.findByBookingId(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment", "bookingId", bookingId));
         return paymentMapper.toResponse(payment);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<PaymentResponse> getAllPayments(int page, int size) {
+        Page<Payment> pages = paymentRepository.findAll(PageRequest.of(page, size, Sort.by("paymentDate").descending()));
+        
+        return PageResponse.<PaymentResponse>builder()
+                .content(pages.getContent().stream().map(paymentMapper::toResponse).toList())
+                .page(pages.getNumber())
+                .size(pages.getSize())
+                .totalElements(pages.getTotalElements())
+                .totalPages(pages.getTotalPages())
+                .last(pages.isLast())
+                .build();
     }
 }

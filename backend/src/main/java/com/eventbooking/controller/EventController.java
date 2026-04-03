@@ -3,6 +3,7 @@ package com.eventbooking.controller;
 import com.eventbooking.dto.request.EventRequest;
 import com.eventbooking.dto.response.EventDetailResponse;
 import com.eventbooking.dto.response.EventResponse;
+import com.eventbooking.dto.response.EventStatsResponse;
 import com.eventbooking.dto.response.PageResponse;
 import com.eventbooking.entity.enums.EventCategory;
 import com.eventbooking.entity.enums.EventStatus;
@@ -15,6 +16,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller quản lý luồng Sự kiện: Khách hàng tìm kiếm, xem chi tiết và Admin/Manager quản lý.
+ */
 @RestController
 @RequestMapping("/api/events")
 public class EventController {
@@ -67,6 +71,13 @@ public class EventController {
     @GetMapping("/{id}")
     public ResponseEntity<EventDetailResponse> getEventById(@PathVariable Long id) {
         return ResponseEntity.ok(eventService.getEventById(id));
+    }
+
+    /** Manager/Admin: get event stats (ticket sales, revenue, attendees) */
+    @GetMapping("/{id}/stats")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<EventStatsResponse> getEventStats(@PathVariable Long id) {
+        return ResponseEntity.ok(eventService.getEventStats(id));
     }
 
     /** Admin: create event */

@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Controller cung cấp API thống kê doanh thu và dữ liệu tổng quan cho trang Dashboard.
+ */
 @RestController
 @RequestMapping("/api/dashboard")
 @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")

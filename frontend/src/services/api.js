@@ -51,6 +51,7 @@ export const eventApi = {
   updateStatus: (id, status) => api.patch(`/events/${id}/status`, null, { params: { status } }),
   delete: (id) => api.delete(`/events/${id}`),
   getAll: (params) => api.get('/events/admin/all', { params }),
+  getStats: (id) => api.get(`/events/${id}/stats`),
 };
 
 // ── Venues ─────────────────────────────────────

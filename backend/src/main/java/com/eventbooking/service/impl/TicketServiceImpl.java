@@ -13,6 +13,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Dịch vụ xử lý liên quan đến Vé (Ticket), bao gồm xem danh sách và giữ vé tạm thời.
+ */
 @Service
 public class TicketServiceImpl implements TicketService {
 
@@ -22,6 +25,9 @@ public class TicketServiceImpl implements TicketService {
         this.ticketRepository = ticketRepository;
     }
 
+    /**
+     * Lấy danh sách tất cả các vé thuộc một sự kiện và một khu vực (Zone) cụ thể.
+     */
     @Override
     @Transactional(readOnly = true)
     public List<TicketResponse> getTicketsByEventAndZone(Long eventId, Long zoneId) {
@@ -30,6 +36,9 @@ public class TicketServiceImpl implements TicketService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Giữ vé tạm thời (Pessimistic Lock) khi người dùng đang trong quá trình đặt vé thanh toán.
+     */
     @Override
     @Transactional
     public List<TicketResponse> holdTickets(List<Long> ticketIds) {

@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Controller quản lý xác thực: Đăng ký, Đăng nhập, Quên mật khẩu và Xác thực OTP.
+ */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {

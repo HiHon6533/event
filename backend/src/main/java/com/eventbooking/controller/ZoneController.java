@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller quản lý Khu vực nội bộ (Zone) của một Địa điểm tổ chức (Venue).
+ */
 @RestController
 @RequestMapping("/api/zones")
 public class ZoneController {

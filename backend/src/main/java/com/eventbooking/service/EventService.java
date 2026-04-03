@@ -3,6 +3,7 @@ package com.eventbooking.service;
 import com.eventbooking.dto.request.EventRequest;
 import com.eventbooking.dto.response.EventDetailResponse;
 import com.eventbooking.dto.response.EventResponse;
+import com.eventbooking.dto.response.EventStatsResponse;
 import com.eventbooking.dto.response.PageResponse;
 import com.eventbooking.entity.enums.EventCategory;
 import com.eventbooking.entity.enums.EventStatus;
@@ -21,4 +22,5 @@ public interface EventService {
     PageResponse<EventResponse> getAllEvents(int page, int size);
     List<String> getSearchSuggestions();
     void logSearchKeyword(String keyword);
+    EventStatsResponse getEventStats(Long eventId);
 }

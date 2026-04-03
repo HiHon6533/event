@@ -24,6 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Dịch vụ xử lý Người dùng: Hồ sơ cá nhân, Luồng đăng ký nâng cấp Nhà tổ chức (Manager) và kiểm duyệt của Admin.
+ */
 @Service
 public class UserServiceImpl implements UserService {
 

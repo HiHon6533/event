@@ -23,6 +23,9 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Random;
 
+/**
+ * Dịch vụ xử lý logic xác thực người dùng: Đăng ký, Đăng nhập (với JWT), kích hoạt tài khoản bằng OTP và quên mật khẩu.
+ */
 @Service
 public class AuthServiceImpl implements AuthService {
 

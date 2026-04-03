@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Dịch vụ quản lý thông tin Địa điểm tổ chức sự kiện (Venue).
+ */
 @Service
 public class VenueServiceImpl implements VenueService {
 
@@ -24,6 +27,9 @@ public class VenueServiceImpl implements VenueService {
         this.venueMapper = venueMapper;
     }
 
+    /**
+     * Lấy danh sách tất cả địa điểm hiện đang hoạt động.
+     */
     @Override
     @Transactional(readOnly = true)
     public List<VenueResponse> getAllVenues() {
@@ -40,6 +46,9 @@ public class VenueServiceImpl implements VenueService {
         return venueMapper.toResponse(venue);
     }
 
+    /**
+     * Thêm mới một địa điểm tổ chức.
+     */
     @Override
     @Transactional
     public VenueResponse createVenue(VenueRequest request) {

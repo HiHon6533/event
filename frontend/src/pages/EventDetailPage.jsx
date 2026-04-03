@@ -18,6 +18,7 @@ export default function EventDetailPage() {
   const [expandedTc, setExpandedTc] = useState(null);
   const [mapExpanded, setMapExpanded] = useState(false);
   const [relatedEvents, setRelatedEvents] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -58,10 +59,28 @@ export default function EventDetailPage() {
 
   const handleBooking = async () => {
     if (totalTickets === 0) { toast.error('Vui lòng chọn ít nhất 1 vé'); return; }
+    
+    // Thêm logic bắt buộc chọn ngày nếu event đang ONGOING và cho phép chọn
+    if ((event.status === 'ONGOING' || (event.status === 'PUBLISHED' && isOngoing)) && !selectedDate) {
+      toast.error('Vui lòng chọn ngày bạn muốn xem ở mục Lịch diễn!');
+      document.getElementById('tb-schedule')?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
 
     const items = Object.entries(quantities)
       .filter(([, qty]) => qty > 0)
       .map(([tcId, quantity]) => ({ ticketCategoryId: parseInt(tcId), quantity }));
+
+    // For multi-day events, a date might be selected
+    const bookingPayload = { eventId: parseInt(id), items };
+    if (selectedDate) {
+      // Need local date mapped to timezone, but we can just use ISO
+      bookingPayload.eventDate = [
+        selectedDate.getFullYear(),
+        (selectedDate.getMonth() + 1).toString().padStart(2, '0'),
+        selectedDate.getDate().toString().padStart(2, '0')
+      ].join('-') + 'T00:00:00';
+    }
 
     if (!user) { 
       toast.error('Hãy đăng nhập để đặt vé!');
@@ -72,7 +91,7 @@ export default function EventDetailPage() {
 
     setBooking(true);
     try {
-      const res = await bookingApi.create({ eventId: parseInt(id), items });
+      const res = await bookingApi.create(bookingPayload);
       toast.success('Đặt vé thành công!');
       navigate(`/bookings/${res.data.id}`);
     } catch (err) {
@@ -113,9 +132,30 @@ export default function EventDetailPage() {
     scheduleBadge = <span className="tb-status-badge tb-status-ended">Suất diễn đã kết thúc</span>;
     isPurchaseLocked = true;
   } else if (event.status === 'ONGOING' || (event.status === 'PUBLISHED' && isOngoing)) {
-    btnBadge = <span className="tb-status-badge tb-status-ongoing" style={{ background: 'var(--warning)', border: '1px solid var(--warning)' }}>Đang diễn ra</span>;
-    scheduleBadge = <span className="tb-status-badge tb-status-ongoing" style={{ background: 'var(--warning)', color: 'white' }}>Suất diễn đang diễn ra</span>;
-    isPurchaseLocked = true;
+    if (isSoldOut) {
+      btnBadge = <span className="tb-status-badge" style={{ background: '#e74c3c', color: 'white', border: '1px solid #e74c3c' }}>Đã hết vé</span>;
+      scheduleBadge = <span className="tb-status-badge" style={{ background: '#e74c3c', color: 'white' }}>Suất diễn đã hết vé</span>;
+      isPurchaseLocked = true;
+    } else {
+      btnBadge = (
+        <button className="btn btn-lg" style={{ background: 'var(--warning)', color: '#fff', border: 'none', fontWeight: 700 }} onClick={() => document.getElementById('tb-schedule')?.scrollIntoView({ behavior: 'smooth' })}>
+          Chọn ngày mua vé
+        </button>
+      );
+      scheduleBadge = <span className="tb-status-badge tb-status-ongoing" style={{ background: 'var(--warning)', color: 'white' }}>Đang diễn ra, hãy chọn ngày bên dưới</span>;
+      
+      const todayDateObj = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      if (selectedDate) {
+        const selectedDateOnly = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+        if (selectedDateOnly <= todayDateObj) {
+          isPurchaseLocked = true;
+        } else {
+          isPurchaseLocked = false;
+        }
+      } else {
+        isPurchaseLocked = false; // Allow them to view quantity selectors before picking a date.
+      }
+    }
   } else if (event.status === 'PUBLISHED' && isUpcoming) {
     if (isSoldOut) {
       btnBadge = <span className="tb-status-badge" style={{ background: '#e74c3c', color: 'white', border: '1px solid #e74c3c' }}>Đã hết vé</span>;
@@ -154,7 +194,7 @@ export default function EventDetailPage() {
       {/* ═══════════════════════════════════════════════════
           SECTION 1: Hero — Blurred Banner + Ticket Card Overlay
           ═══════════════════════════════════════════════════ */}
-      <div className="tb-hero-banner" style={{ backgroundImage: `url(${event.bannerUrl || event.thumbnailUrl || ''})` }}>
+      <div className="tb-hero-banner" style={{ backgroundImage: `url(${(event.bannerUrl && event.bannerUrl !== 'image_url') ? event.bannerUrl : (event.thumbnailUrl && event.thumbnailUrl !== 'image_url') ? event.thumbnailUrl : 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800'})` }}>
         <div className="tb-hero-banner-blur" />
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
           <div className="tb-ticket-card">
@@ -191,7 +231,7 @@ export default function EventDetailPage() {
             {/* Right: Event Image (poster style) */}
             <div className="tb-ticket-image">
               <img 
-                src={event.imageUrl || event.bannerUrl || event.thumbnailUrl} 
+                src={(event.imageUrl && event.imageUrl !== 'image_url') ? event.imageUrl : (event.bannerUrl && event.bannerUrl !== 'image_url') ? event.bannerUrl : (event.thumbnailUrl && event.thumbnailUrl !== 'image_url') ? event.thumbnailUrl : 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400'} 
                 alt={event.title} 
                 onClick={() => document.getElementById('tb-schedule')?.scrollIntoView({ behavior: 'smooth' })}
                 style={{ cursor: 'pointer' }}
@@ -318,7 +358,33 @@ export default function EventDetailPage() {
                 const thisDay = new Date(startYear, startMonth, i);
                 const hasEvent = thisDay >= eventStartDay && thisDay <= eventEndDay;
                 if (hasEvent) eventDaysCount++;
-                days.push({ id: `curr-${i}`, day: i, isCurrentMonth: true, hasEvent, isSelected: false }); // i === startDate.getDate() ? 
+                
+                // Allow booking if it's an event day AND it's strictly in the future (tomorrow or later) when ONGOING
+                let isSelectable = false;
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
+                if (hasEvent) {
+                  if (event.status === 'PUBLISHED' && isOngoing) {
+                    // For ongoing event, can only select from tomorrow
+                    if (thisDay > today) isSelectable = true;
+                  } else if (event.status === 'PUBLISHED' && isUpcoming) {
+                    isSelectable = true;
+                  }
+                }
+                
+                const isSelected = selectedDate && selectedDate.getTime() === thisDay.getTime();
+                const isToday = thisDay.getTime() === today.getTime();
+                
+                days.push({ 
+                  id: `curr-${i}`, 
+                  day: i, 
+                  isCurrentMonth: true, 
+                  hasEvent, 
+                  isSelectable,
+                  isSelected,
+                  isToday,
+                  fullDate: thisDay
+                }); 
               }
               
               // Next month padding
@@ -348,7 +414,15 @@ export default function EventDetailPage() {
                     {days.map((item) => (
                       <div 
                         key={item.id} 
-                        className={`tb-calendar-day ${item.isCurrentMonth ? 'current-month' : ''} ${item.hasEvent ? 'has-event' : ''} ${item.isSelected ? 'is-selected' : ''}`}
+                        className={`tb-calendar-day ${item.isCurrentMonth ? 'current-month' : ''} ${item.hasEvent ? 'has-event' : ''} ${item.isSelectable ? 'is-selectable' : ''} ${item.isSelected ? 'is-selected' : ''} ${item.isToday ? 'is-today' : ''}`}
+                        onClick={() => {
+                          if (item.isSelectable) {
+                            setSelectedDate(item.fullDate);
+                          } else if (item.hasEvent) {
+                            toast.error('Ngày này đã diễn ra hoặc không thể chọn', { id: 'date-err' });
+                          }
+                        }}
+                        style={{ cursor: item.isSelectable ? 'pointer' : 'default' }}
                       >
                         {item.day.toString().padStart(2, '0')}
                       </div>
@@ -418,7 +492,7 @@ export default function EventDetailPage() {
                             )}
                             {isPurchaseLocked && (
                               <p style={{ color: '#e74c3c', fontSize: '0.9rem', marginTop: '10px', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                🔒 Hiện không thể mua vé trực tuyến
+                                🔒 Hiện không thể mua vé cho ngày hôm nay hoặc trước đó. Hãy chọn ngày tiếp theo trong lịch.
                               </p>
                             )}
                           </div>
@@ -434,10 +508,13 @@ export default function EventDetailPage() {
 
             {/* Checkout bar */}
             {totalTickets > 0 && !isPurchaseLocked && (
-              <div className="tb-checkout-bar fade-in">
+              <div className="tb-checkout-bar fade-in" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
                   <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Tổng cộng ({totalTickets} vé)</div>
                   <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent)' }}>{formatCurrency(totalAmount)}</div>
+                </div>
+                <div style={{ flexGrow: 1, textAlign: 'center', color: 'var(--success)', fontWeight: 600 }}>
+                  {selectedDate ? `Đã chọn: ${formatDate(selectedDate)}` : 'Chưa chọn ngày xem (Tùy chọn)'}
                 </div>
                 <button
                   className="btn btn-primary btn-lg"

@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller quản lý Địa điểm tổ chức (Venue) dành cho toàn bộ hệ thống.
+ */
 @RestController
 @RequestMapping("/api/venues")
 public class VenueController {

@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Controller mô phỏng tính năng quét mã QR check-in tại cổng sự kiện thực tế.
+ */
 @RestController
 @RequestMapping("/api/checkin")
 public class CheckInController {

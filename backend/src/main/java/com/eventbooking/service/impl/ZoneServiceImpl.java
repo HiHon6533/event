@@ -15,6 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Dịch vụ quản lý Zone (Khu vực / Khán đài) gắn liền với Venue (Địa điểm tổ chức).
+ */
 @Service
 public class ZoneServiceImpl implements ZoneService {
 

@@ -34,6 +34,7 @@ public class BookingMapper {
                 .isCheckedIn(booking.getIsCheckedIn())
                 .note(booking.getNote())
                 .bookingDate(booking.getBookingDate())
+                .eventDate(booking.getEventDate())
                 .bookingDetails(booking.getBookingDetails() != null
                         ? booking.getBookingDetails().stream()
                             .map(this::toDetailResponse)

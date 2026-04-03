@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { eventApi, venueApi, uploadApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatDateTime, CATEGORY_LABELS, STATUS_LABELS, STATUS_COLORS } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import { formatCurrency } from '../../utils/helpers';
+import api from '../../services/api';
 import EventConfigView from './EventConfigModal';
 
 export default function AdminEventsPage() {
@@ -54,6 +57,13 @@ export default function AdminEventsPage() {
   const [thumbnailPreview, setThumbnailPreview] = useState('');
   const [mapPreview, setMapPreview] = useState('');
   const [organizerLogoPreview, setOrganizerLogoPreview] = useState('');
+
+  // Cancellation Modal States
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancelingEvent, setCancelingEvent] = useState(null);
+  const [cancelStats, setCancelStats] = useState(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [isSubmittingCancel, setIsSubmittingCancel] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -246,6 +256,40 @@ export default function AdminEventsPage() {
     }
   };
 
+  const handleOpenCancelModal = async (event) => {
+    setCancelingEvent(event);
+    setCancelReason('');
+    setCancelStats(null);
+    setCancelModalOpen(true);
+    try {
+      const res = await api.get(`/event-cancellations/stats/${event.id}`);
+      setCancelStats(res.data);
+    } catch (err) {
+      toast.error('Lỗi khi tính toán số liệu hủy');
+    }
+  };
+
+  const submitCancellationReq = async () => {
+    if (!cancelReason.trim()) {
+      toast.error('Vui lòng nhập lý do hủy sự kiện');
+      return;
+    }
+    setIsSubmittingCancel(true);
+    try {
+      await api.post('/event-cancellations', {
+        eventId: cancelingEvent.id,
+        reason: cancelReason
+      });
+      toast.success('Gửi yêu cầu hủy thành công, đang chờ Admin duyệt');
+      setCancelModalOpen(false);
+      loadData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Có lỗi xảy ra');
+    } finally {
+      setIsSubmittingCancel(false);
+    }
+  };
+
   // Determine which status actions are available based on role and current status
   const getStatusActions = (event) => {
     const actions = [];
@@ -269,6 +313,18 @@ export default function AdminEventsPage() {
     }
 
     return actions;
+  };
+
+  const renderManagerActions = (event) => {
+    if (!isManager) return null;
+    if (event.status === 'PUBLISHED') {
+      return (
+        <button className="btn btn-sm" style={{ background: '#e74c3c', color: '#fff' }} onClick={() => handleOpenCancelModal(event)}>
+          🚨 Hủy & Hoàn tiền
+        </button>
+      );
+    }
+    return null;
   };
 
   // Shared input styles
@@ -362,11 +418,20 @@ export default function AdminEventsPage() {
                         </>
                       )}
 
+                      {/* Stats: for PUBLISHED events */}
+                      {e.status === 'PUBLISHED' && (
+                        <Link to={`/admin/events/${e.id}/stats`} className="btn btn-sm" style={{ background: '#6c5ce7', color: '#fff', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          📊 Thống kê
+                        </Link>
+                      )}
+
                       {getStatusActions(e).map((action, idx) => (
                         <button key={idx} className="btn btn-sm" style={{ background: action.color, color: '#fff' }} onClick={() => handleStatusChange(e.id, action.status)}>
                           {action.label}
                         </button>
                       ))}
+
+                      {renderManagerActions(e)}
                     </div>
                   </td>
                 </tr>
@@ -551,6 +616,50 @@ export default function AdminEventsPage() {
                 <button type="submit" className="btn btn-primary" style={{ background: '#0984e3' }} disabled={venueSubmitting}>{venueSubmitting ? 'Đang tạo...' : 'Tạo Địa điểm'}</button>
               </div>
             </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Cancellation Request Modal */}
+      {cancelModalOpen && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--bg-card)', padding: '30px', borderRadius: '16px', width: '90%', maxWidth: '500px', border: '1px solid var(--border)', boxShadow: '0 25px 50px -12px rgba(231, 76, 60, 0.25)' }}>
+            <h2 style={{ margin: '0 0 16px', fontSize: '1.4rem', color: '#e74c3c', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10 }}>🚨 Yêu cầu Hủy & Hoàn Tiền</h2>
+            
+            <p style={{ margin: '0 0 20px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              Sự kiện <strong style={{ color: '#fff' }}>{cancelingEvent?.title}</strong> cần gửi yêu cầu để Admin phê duyệt quá trình Hủy và Hoàn tiền tự động cho người mua vé.
+            </p>
+
+            <div style={{ background: 'var(--bg-lighter)', padding: '16px', borderRadius: '12px', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Số lượng vé đã bán:</span>
+                <span style={{ fontWeight: 600, color: '#fff' }}>{cancelStats ? cancelStats.totalTicketsSold : '...'}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Tổng tiền cần Refund:</span>
+                <span style={{ fontWeight: 700, color: '#e74c3c', fontSize: '1.1rem' }}>{cancelStats ? formatCurrency(cancelStats.totalRefundAmount) : '...'}</span>
+              </div>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '24px' }}>
+              <label style={labelStyle}>Lý do hủy sự kiện <span style={{ color: '#e74c3c' }}>*</span></label>
+              <textarea 
+                rows="4" 
+                value={cancelReason} 
+                onChange={e => setCancelReason(e.target.value)} 
+                style={textareaStyle} 
+                placeholder="Ví dụ: Nghệ sĩ hủy show, Thời tiết xấu..." 
+                disabled={!cancelStats}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button className="btn btn-secondary" onClick={() => setCancelModalOpen(false)} disabled={isSubmittingCancel}>Đóng</button>
+              <button className="btn btn-primary" style={{ background: '#e74c3c' }} onClick={submitCancellationReq} disabled={isSubmittingCancel || !cancelStats}>
+                {isSubmittingCancel ? 'Đang gửi...' : 'Gửi Yêu cầu & Xác nhận'}
+              </button>
+            </div>
           </div>
         </div>,
         document.body

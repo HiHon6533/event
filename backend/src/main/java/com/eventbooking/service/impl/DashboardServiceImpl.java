@@ -3,6 +3,8 @@ package com.eventbooking.service.impl;
 import com.eventbooking.dto.response.BookingResponse;
 import com.eventbooking.dto.response.DashboardResponse;
 import com.eventbooking.dto.response.DailyRevenueResponse;
+import com.eventbooking.dto.response.TopEventDto;
+import com.eventbooking.dto.response.TopOrganizerDto;
 import com.eventbooking.entity.Booking;
 import com.eventbooking.entity.enums.BookingStatus;
 import com.eventbooking.entity.enums.EventStatus;
@@ -28,6 +30,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+/**
+ * Dịch vụ xử lý dữ liệu tổng quan thống kê (Dashboard) như tổng doanh thu, số lượng đơn, hiển thị biểu đồ.
+ */
 @Service
 public class DashboardServiceImpl implements DashboardService {
 
@@ -65,6 +70,8 @@ public class DashboardServiceImpl implements DashboardService {
         BigDecimal monthlyRevenue;
         List<BookingResponse> recentBookings;
         List<DailyRevenueResponse> dailyRevenues = new ArrayList<>();
+        List<TopEventDto> topEvents = new ArrayList<>();
+        List<TopOrganizerDto> topOrganizers = new ArrayList<>();
         
         LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
         LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30).withHour(0).withMinute(0).withSecond(0);
@@ -85,6 +92,19 @@ public class DashboardServiceImpl implements DashboardService {
                     .map(bookingMapper::toResponse)
                     .collect(Collectors.toList());
             recentConfirmedBookings = bookingRepository.findConfirmedBookingsSinceByManagerId(thirtyDaysAgo, managerId);
+
+            // Top events for Manager
+            List<Object[]> topEventsData = bookingRepository.findTopEventsByRevenueAndManagerId(managerId, PageRequest.of(0, 5));
+            for (Object[] row : topEventsData) {
+                topEvents.add(TopEventDto.builder()
+                        .id((Long) row[0])
+                        .title((String) row[1])
+                        .category(row[2] != null ? row[2].toString() : null)
+                        .imageUrl((String) row[3])
+                        .totalTickets(row[4] != null ? ((Number) row[4]).longValue() : 0L)
+                        .totalRevenue((BigDecimal) row[5])
+                        .build());
+            }
         } else {
             // Admin sees everything
             totalUsers = userRepository.count();
@@ -102,6 +122,32 @@ public class DashboardServiceImpl implements DashboardService {
                     .map(bookingMapper::toResponse)
                     .collect(Collectors.toList());
             recentConfirmedBookings = bookingRepository.findConfirmedBookingsSince(thirtyDaysAgo);
+            
+            // Map top events
+            List<Object[]> topEventsData = bookingRepository.findTopEventsByRevenue(PageRequest.of(0, 5));
+            for (Object[] row : topEventsData) {
+                topEvents.add(TopEventDto.builder()
+                        .id((Long) row[0])
+                        .title((String) row[1])
+                        .category(row[2] != null ? row[2].toString() : null)
+                        .imageUrl((String) row[3])
+                        .totalTickets(row[4] != null ? ((Number) row[4]).longValue() : 0L)
+                        .totalRevenue((BigDecimal) row[5])
+                        .build());
+            }
+
+            // Map top organizers
+            List<Object[]> topOrganizersData = bookingRepository.findTopOrganizersByRevenue(PageRequest.of(0, 5));
+            for (Object[] row : topOrganizersData) {
+                topOrganizers.add(TopOrganizerDto.builder()
+                        .id((Long) row[0])
+                        .fullName((String) row[1])
+                        .email((String) row[2])
+                        .totalEvents(row[3] != null ? ((Number) row[3]).longValue() : 0L)
+                        .totalTickets(row[4] != null ? ((Number) row[4]).longValue() : 0L)
+                        .totalRevenue((BigDecimal) row[5])
+                        .build());
+            }
         }
 
         if (totalRevenue == null) totalRevenue = BigDecimal.ZERO;
@@ -142,6 +188,8 @@ public class DashboardServiceImpl implements DashboardService {
                 .monthlyRevenue(monthlyRevenue)
                 .dailyRevenues(dailyRevenues)
                 .recentBookings(recentBookings)
+                .topEvents(topEvents)
+                .topOrganizers(topOrganizers)
                 .build();
     }
 }
