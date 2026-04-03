@@ -170,4 +170,36 @@ public class EmailService {
             throw new RuntimeException("Không thể gửi email thông báo hủy: " + e.getMessage(), e);
         }
     }
+
+    @Async
+    public void sendRefundEmail(String toEmail, String subject, String contentText) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom("hoangnguyen6533@gmail.com", "Event Booking System");
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+
+            String htmlContent = """
+                <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
+                    <div style="background: linear-gradient(135deg, #ef4444, #f87171); padding: 32px 24px; text-align: center;">
+                        <h1 style="color: #fff; margin: 0; font-size: 24px;">🎫 Event Booking</h1>
+                        <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0;">Thông báo Hoàn Tiền</p>
+                    </div>
+                    <div style="padding: 32px 24px; color: #334155; white-space: pre-line;">
+                        %s
+                    </div>
+                    <div style="background: #f1f5f9; padding: 16px 24px; text-align: center;">
+                        <p style="margin: 0; color: #64748b; font-size: 12px;">© 2026 Event Booking System</p>
+                    </div>
+                </div>
+                """.formatted(contentText);
+
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+        } catch (MessagingException | java.io.UnsupportedEncodingException e) {
+            System.err.println("Không thể gửi email refund: " + e.getMessage());
+        }
+    }
 }

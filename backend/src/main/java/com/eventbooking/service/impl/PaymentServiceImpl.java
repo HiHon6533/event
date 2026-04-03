@@ -12,6 +12,10 @@ import com.eventbooking.mapper.PaymentMapper;
 import com.eventbooking.repository.BookingRepository;
 import com.eventbooking.repository.PaymentRepository;
 import com.eventbooking.service.PaymentService;
+import com.eventbooking.dto.response.PageResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,5 +86,20 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = paymentRepository.findByBookingId(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment", "bookingId", bookingId));
         return paymentMapper.toResponse(payment);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<PaymentResponse> getAllPayments(int page, int size) {
+        Page<Payment> pages = paymentRepository.findAll(PageRequest.of(page, size, Sort.by("paymentDate").descending()));
+        
+        return PageResponse.<PaymentResponse>builder()
+                .content(pages.getContent().stream().map(paymentMapper::toResponse).toList())
+                .page(pages.getNumber())
+                .size(pages.getSize())
+                .totalElements(pages.getTotalElements())
+                .totalPages(pages.getTotalPages())
+                .last(pages.isLast())
+                .build();
     }
 }

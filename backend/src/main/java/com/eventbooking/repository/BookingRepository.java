@@ -64,4 +64,25 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
        @Query("SELECT b FROM Booking b WHERE b.status = 'CONFIRMED' AND b.bookingDate >= :startDate AND b.event.manager.id = :managerId")
        List<Booking> findConfirmedBookingsSinceByManagerId(@Param("startDate") LocalDateTime startDate,
                      @Param("managerId") Long managerId);
+
+       @Query("SELECT e.id, e.title, e.category, e.thumbnailUrl, SUM(b.totalTickets), SUM(b.totalAmount) " +
+              "FROM Booking b JOIN b.event e " +
+              "WHERE b.status = 'CONFIRMED' " +
+              "GROUP BY e.id, e.title, e.category, e.thumbnailUrl " +
+              "ORDER BY SUM(b.totalAmount) DESC")
+       List<Object[]> findTopEventsByRevenue(Pageable pageable);
+
+       @Query("SELECT u.id, u.fullName, u.email, COUNT(DISTINCT e.id), SUM(b.totalTickets), SUM(b.totalAmount) " +
+              "FROM Booking b JOIN b.event e JOIN e.manager u " +
+              "WHERE b.status = 'CONFIRMED' " +
+              "GROUP BY u.id, u.fullName, u.email " +
+              "ORDER BY SUM(b.totalAmount) DESC")
+       List<Object[]> findTopOrganizersByRevenue(Pageable pageable);
+
+       @Query("SELECT e.id, e.title, e.category, e.thumbnailUrl, SUM(b.totalTickets), SUM(b.totalAmount) " +
+              "FROM Booking b JOIN b.event e " +
+              "WHERE b.status = 'CONFIRMED' AND e.manager.id = :managerId " +
+              "GROUP BY e.id, e.title, e.category, e.thumbnailUrl " +
+              "ORDER BY SUM(b.totalAmount) DESC")
+       List<Object[]> findTopEventsByRevenueAndManagerId(@Param("managerId") Long managerId, Pageable pageable);
 }

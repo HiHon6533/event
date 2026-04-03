@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation, Navigate } from 'react-router-dom';
 import { dashboardApi, organizerApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency } from '../../utils/helpers';
-import { HiOutlineChartBar, HiOutlineCalendar, HiOutlineUsers, HiOutlineTicket, HiOutlineLocationMarker, HiOutlineClipboardCheck, HiOutlineClock, HiOutlineShieldCheck } from 'react-icons/hi';
+import { HiOutlineChartBar, HiOutlineCalendar, HiOutlineUsers, HiOutlineTicket, HiOutlineLocationMarker, HiOutlineClipboardCheck, HiOutlineClock, HiOutlineShieldCheck, HiOutlineXCircle, HiOutlineCreditCard, HiOutlineCog } from 'react-icons/hi';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -53,16 +53,25 @@ function AdminSidebar() {
       <Link to="/admin/bookings" className={isActive('/admin/bookings')}>
         <HiOutlineTicket /> {isManager ? 'Đơn đặt vé' : 'Quản lý Đặt vé'}
       </Link>
+      <Link to="/admin/cancellation-requests" className={isActive('/admin/cancellation-requests')}>
+        <HiOutlineXCircle /> Yêu cầu Hủy
+      </Link>
 
       {isAdmin && (
         <>
           <div style={{ height: 1, background: 'var(--border)', margin: '12px 16px' }} />
-          <div style={{ padding: '0 16px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8, fontWeight: 600 }}>Quản trị hệ thống</div>
+          <div style={{ padding: '0 16px', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8, fontWeight: 600 }}>Nghiệp vụ / Hệ thống</div>
+          <Link to="/admin/payments" className={isActive('/admin/payments')}>
+            <HiOutlineCreditCard /> Giao dịch & Thanh toán
+          </Link>
           <Link to="/admin/venues" className={isActive('/admin/venues')}>
             <HiOutlineLocationMarker /> Địa điểm
           </Link>
           <Link to="/admin/users" className={isActive('/admin/users')}>
             <HiOutlineUsers /> Người dùng
+          </Link>
+          <Link to="/admin/settings" className={isActive('/admin/settings')}>
+            <HiOutlineCog /> Cấu hình hệ thống
           </Link>
           <Link to="/admin/organizer-requests" className={isActive('/admin/organizer-requests')} style={{ position: 'relative' }}>
             <HiOutlineClipboardCheck /> Duyệt BTC
@@ -230,6 +239,62 @@ function DashboardHome() {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Top Events - visible to both Admin and Manager */}
+      {stats?.topEvents && stats.topEvents.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: isAdmin ? '1fr 1fr' : '1fr', gap: '24px', marginTop: '24px' }}>
+          <div className="card" style={{ padding: '24px' }}>
+            <h3 style={{ fontWeight: 700, margin: '0 0 16px 0', color: '#0984e3' }}>🔥 Top Sự kiện Doanh thu</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {stats.topEvents.map((e, idx) => (
+                <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--bg-lighter)', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 800, color: idx < 3 ? '#e74c3c' : 'var(--text-muted)', width: '24px' }}>#{idx + 1}</div>
+                  {e.imageUrl ? (
+                    <img src={e.imageUrl} alt={e.title} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px' }} />
+                  ) : (
+                    <div style={{ width: '48px', height: '48px', background: 'var(--border)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>🖼️</div>
+                  )}
+                  <div style={{ flex: 1, overflow: 'hidden' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.title}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{e.totalTickets} vé bán ra</div>
+                  </div>
+                  <div style={{ fontWeight: 700, color: 'var(--primary-light)' }}>
+                    {formatCurrency(e.totalRevenue)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Top Organizers - Admin only */}
+          {isAdmin && (
+            <div className="card" style={{ padding: '24px' }}>
+              <h3 style={{ fontWeight: 700, margin: '0 0 16px 0', color: '#00b894' }}>👑 Top Ban tổ chức</h3>
+              {stats?.topOrganizers && stats.topOrganizers.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {stats.topOrganizers.map((o, idx) => (
+                    <div key={o.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--bg-lighter)', borderRadius: '8px' }}>
+                      <div style={{ fontSize: '1.2rem', fontWeight: 800, color: idx < 3 ? '#f1c40f' : 'var(--text-muted)', width: '24px' }}>#{idx + 1}</div>
+                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#181818', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                        {o.fullName?.charAt(0)}
+                      </div>
+                      <div style={{ flex: 1, overflow: 'hidden' }}>
+                        <div style={{ fontWeight: 600, fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{o.fullName}</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{o.totalEvents} sự kiện | {o.totalTickets} vé</div>
+                      </div>
+                      <div style={{ fontWeight: 700, color: 'var(--primary-light)' }}>
+                        {formatCurrency(o.totalRevenue)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>Chưa có dữ liệu</div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </>

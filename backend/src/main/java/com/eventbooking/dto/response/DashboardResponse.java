@@ -21,4 +21,6 @@ public class DashboardResponse {
     private BigDecimal monthlyRevenue;
     private List<DailyRevenueResponse> dailyRevenues;
     private List<BookingResponse> recentBookings;
+    private List<TopEventDto> topEvents;
+    private List<TopOrganizerDto> topOrganizers;
 }

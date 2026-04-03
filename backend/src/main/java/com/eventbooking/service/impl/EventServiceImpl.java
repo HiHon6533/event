@@ -3,15 +3,20 @@ package com.eventbooking.service.impl;
 import com.eventbooking.dto.request.EventRequest;
 import com.eventbooking.dto.response.EventDetailResponse;
 import com.eventbooking.dto.response.EventResponse;
+import com.eventbooking.dto.response.EventStatsResponse;
 import com.eventbooking.dto.response.PageResponse;
 import com.eventbooking.entity.Event;
+import com.eventbooking.entity.Booking;
+import com.eventbooking.entity.TicketCategory;
 import com.eventbooking.entity.Venue;
+import com.eventbooking.entity.enums.BookingStatus;
 import com.eventbooking.entity.enums.EventCategory;
 import com.eventbooking.entity.enums.EventStatus;
 import com.eventbooking.entity.User;
 import com.eventbooking.exception.ResourceNotFoundException;
 import com.eventbooking.mapper.EventMapper;
 import com.eventbooking.repository.EventRepository;
+import com.eventbooking.repository.TicketCategoryRepository;
 import com.eventbooking.repository.UserRepository;
 import com.eventbooking.repository.VenueRepository;
 import com.eventbooking.security.SecurityUtils;
@@ -22,6 +27,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.security.access.AccessDeniedException;
@@ -37,19 +45,23 @@ public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
     private final com.eventbooking.repository.SearchHistoryRepository searchHistoryRepository;
     private final com.eventbooking.repository.BookingRepository bookingRepository;
+    private final TicketCategoryRepository ticketCategoryRepository;
     private final com.eventbooking.service.EmailService emailService;
     private final EventMapper eventMapper;
     private final SecurityUtils securityUtils;
 
     public EventServiceImpl(EventRepository eventRepository, VenueRepository venueRepository,
-                           UserRepository userRepository, com.eventbooking.repository.SearchHistoryRepository searchHistoryRepository, 
-                           com.eventbooking.repository.BookingRepository bookingRepository, com.eventbooking.service.EmailService emailService,
+                           UserRepository userRepository, com.eventbooking.repository.SearchHistoryRepository searchHistoryRepository,
+                           com.eventbooking.repository.BookingRepository bookingRepository,
+                           TicketCategoryRepository ticketCategoryRepository,
+                           com.eventbooking.service.EmailService emailService,
                            EventMapper eventMapper, SecurityUtils securityUtils) {
         this.eventRepository = eventRepository;
         this.venueRepository = venueRepository;
         this.userRepository = userRepository;
         this.searchHistoryRepository = searchHistoryRepository;
         this.bookingRepository = bookingRepository;
+        this.ticketCategoryRepository = ticketCategoryRepository;
         this.emailService = emailService;
         this.eventMapper = eventMapper;
         this.securityUtils = securityUtils;
@@ -62,7 +74,6 @@ public class EventServiceImpl implements EventService {
         Page<Event> events;
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("startTime").ascending());
 
-        // Smart search: split words and join with % so "Anh Trai Say Hi" matches "Anh Trai \"Say Hi\""
         String normalizedKeyword = null;
         if (keyword != null && !keyword.trim().isEmpty()) {
             String[] words = keyword.trim().replaceAll("[\"'\\-]", " ").trim().split("\\s+");
@@ -91,7 +102,6 @@ public class EventServiceImpl implements EventService {
         Page<Event> events;
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("startTime").descending());
 
-        // Smart search: split words and join with % so "Anh Trai Say Hi" matches "Anh Trai \"Say Hi\""
         String normalizedKeyword = null;
         if (keyword != null && !keyword.trim().isEmpty()) {
             String[] words = keyword.trim().replaceAll("[\"'\\-]", " ").trim().split("\\s+");
@@ -114,23 +124,19 @@ public class EventServiceImpl implements EventService {
                 .build();
     }
 
-
     @Override
     @Transactional(readOnly = true)
     public List<EventResponse> getFeaturedEvents() {
-        // Find top 10 trending events based on confirmed bookings
         List<Event> trendingEvents = eventRepository.findTopTrendingEvents(EventStatus.PUBLISHED, PageRequest.of(0, 10)).getContent();
-        
+
         java.util.List<EventResponse> response = new java.util.ArrayList<>();
         for (Event e : trendingEvents) {
             response.add(eventMapper.toResponse(e));
         }
 
-        // Fallback: If we have less than 10 events, append from isFeatured DB (to ensure we always have enough if no bookings)
         if (response.size() < 10) {
             List<Event> featuredInDb = eventRepository.findByIsFeaturedTrueAndStatus(EventStatus.PUBLISHED);
             for (Event e : featuredInDb) {
-                // Ensure no duplicates and event has not yet ended
                 boolean duplicate = response.stream().anyMatch(resp -> resp.getId().equals(e.getId()));
                 if (!duplicate && e.getEndTime().isAfter(java.time.LocalDateTime.now())) {
                     response.add(eventMapper.toResponse(e));
@@ -162,7 +168,6 @@ public class EventServiceImpl implements EventService {
                     .orElseThrow(() -> new ResourceNotFoundException("User", "id", securityUtils.getCurrentUserId()));
         }
 
-        // Manager creates as PENDING_REVIEW (needs admin approval), Admin creates as DRAFT
         EventStatus initialStatus = (manager != null) ? EventStatus.PENDING_REVIEW : EventStatus.DRAFT;
 
         Event event = Event.builder()
@@ -233,7 +238,6 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new ResourceNotFoundException("Event", "id", id));
 
         if (securityUtils.isCurrentUserManager()) {
-            // Manager can only cancel their own events, cannot publish
             if (event.getManager() == null || !event.getManager().getId().equals(securityUtils.getCurrentUserId())) {
                 throw new AccessDeniedException("Bạn không có quyền cập nhật sự kiện này.");
             }
@@ -243,11 +247,10 @@ public class EventServiceImpl implements EventService {
         }
 
         if (status == EventStatus.CANCELLED && event.getStatus() != EventStatus.CANCELLED) {
-            java.util.List<com.eventbooking.entity.enums.BookingStatus> confirmedStatuses = java.util.Collections.singletonList(
-                    com.eventbooking.entity.enums.BookingStatus.CONFIRMED);
-            java.util.List<com.eventbooking.entity.Booking> affectedBookings = bookingRepository.findByEventIdAndStatusIn(id, confirmedStatuses);
-            
-            for (com.eventbooking.entity.Booking b : affectedBookings) {
+            List<BookingStatus> confirmedStatuses = java.util.Collections.singletonList(BookingStatus.CONFIRMED);
+            List<Booking> affectedBookings = bookingRepository.findByEventIdAndStatusIn(id, confirmedStatuses);
+
+            for (Booking b : affectedBookings) {
                 if (b.getUser() != null) {
                     emailService.sendCancellationEmail(b.getUser().getEmail(), b.getUser().getFullName(), event.getTitle());
                 }
@@ -312,5 +315,88 @@ public class EventServiceImpl implements EventService {
                     .build();
             searchHistoryRepository.save(sh);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public EventStatsResponse getEventStats(Long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new ResourceNotFoundException("Event", "id", eventId));
+
+        // Ticket categories breakdown
+        List<TicketCategory> ticketCategories = ticketCategoryRepository.findByEventId(eventId);
+        long totalSold = 0;
+        long totalAvailable = 0;
+        BigDecimal totalRevenue = BigDecimal.ZERO;
+        List<EventStatsResponse.TicketSalesBreakdown> breakdown = new ArrayList<>();
+
+        for (TicketCategory tc : ticketCategories) {
+            int sold = tc.getSoldQuantity() != null ? tc.getSoldQuantity() : 0;
+            int total = tc.getTotalQuantity() != null ? tc.getTotalQuantity() : 0;
+            int remaining = tc.getRemainingQuantity() != null ? tc.getRemainingQuantity() : 0;
+            BigDecimal revenue = tc.getPrice().multiply(BigDecimal.valueOf(sold));
+
+            totalSold += sold;
+            totalAvailable += total;
+            totalRevenue = totalRevenue.add(revenue);
+
+            breakdown.add(EventStatsResponse.TicketSalesBreakdown.builder()
+                    .ticketCategoryId(tc.getId())
+                    .ticketName(tc.getName())
+                    .zoneName(tc.getZone() != null ? tc.getZone().getName() : "N/A")
+                    .price(tc.getPrice())
+                    .totalQuantity(total)
+                    .soldQuantity(sold)
+                    .remainingQuantity(remaining)
+                    .revenue(revenue)
+                    .build());
+        }
+
+        // Get confirmed bookings as attendees
+        List<BookingStatus> attendeeStatuses = List.of(BookingStatus.CONFIRMED);
+        List<Booking> confirmedBookings = bookingRepository.findByEventIdAndStatusIn(eventId, attendeeStatuses);
+
+        long checkedInCount = confirmedBookings.stream()
+                .filter(b -> Boolean.TRUE.equals(b.getIsCheckedIn()))
+                .count();
+
+        double attendanceRate = confirmedBookings.isEmpty() ? 0.0
+                : BigDecimal.valueOf(checkedInCount)
+                    .divide(BigDecimal.valueOf(confirmedBookings.size()), 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .doubleValue();
+
+        List<EventStatsResponse.AttendeeInfo> attendees = confirmedBookings.stream()
+                .map(b -> {
+                    String ticketDetails = b.getBookingDetails() != null ?
+                            b.getBookingDetails().stream()
+                                    .map(bd -> bd.getTicketCategory().getName() + " x" + bd.getQuantity())
+                                    .collect(Collectors.joining(", "))
+                            : "";
+                    return EventStatsResponse.AttendeeInfo.builder()
+                            .bookingId(b.getId())
+                            .bookingCode(b.getBookingCode())
+                            .fullName(b.getUser() != null ? b.getUser().getFullName() : "Khách")
+                            .email(b.getUser() != null ? b.getUser().getEmail() : "")
+                            .ticketCount(b.getTotalTickets() != null ? b.getTotalTickets() : 0)
+                            .totalAmount(b.getTotalAmount())
+                            .status(b.getStatus().name())
+                            .isCheckedIn(b.getIsCheckedIn())
+                            .ticketDetails(ticketDetails)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        return EventStatsResponse.builder()
+                .eventId(eventId)
+                .eventTitle(event.getTitle())
+                .totalTicketsSold(totalSold)
+                .totalTicketsAvailable(totalAvailable)
+                .totalRevenue(totalRevenue)
+                .totalCheckedIn(checkedInCount)
+                .attendanceRate(attendanceRate)
+                .ticketBreakdown(breakdown)
+                .attendees(attendees)
+                .build();
     }
 }

@@ -298,7 +298,7 @@ export default function EventConfigView({ event, onComplete }) {
                       </div>
                       <div>
                         <label style={labelStyle}>Tên Hạng vé <span style={{ color: '#e74c3c' }}>*</span></label>
-                        <input type="text" placeholder="VD: GA, VIP, Early Bird..." value={ticketForm.name} onChange={e => setTicketForm({...ticketForm, name: e.target.value})} required style={inputStyle} />
+                        <input type="text" placeholder="VD: GA, VIP, Premium..." value={ticketForm.name} onChange={e => setTicketForm({...ticketForm, name: e.target.value})} required style={inputStyle} />
                       </div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>

@@ -11,6 +11,7 @@ import com.eventbooking.entity.enums.PaymentStatus;
 import com.eventbooking.entity.Payment;
 import com.eventbooking.repository.BookingRepository;
 import com.eventbooking.repository.PaymentRepository;
+import com.eventbooking.dto.response.PageResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -156,5 +157,13 @@ public class PaymentController {
     @GetMapping("/booking/{bookingId}")
     public ResponseEntity<PaymentResponse> getPaymentByBookingId(@PathVariable Long bookingId) {
         return ResponseEntity.ok(paymentService.getPaymentByBookingId(bookingId));
+    }
+
+    @GetMapping("/all")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PageResponse<PaymentResponse>> getAllPayments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(paymentService.getAllPayments(page, size));
     }
 }

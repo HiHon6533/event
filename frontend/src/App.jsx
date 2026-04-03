@@ -21,6 +21,10 @@ import AdminBookingsPage from './pages/admin/AdminBookingsPage';
 import AdminVenuesPage from './pages/admin/AdminVenuesPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminOrganizerRequestsPage from './pages/admin/AdminOrganizerRequestsPage';
+import AdminSettingsPage from './pages/admin/AdminSettingsPage';
+import AdminPaymentsPage from './pages/admin/AdminPaymentsPage';
+import AdminCancellationRequestsPage from './pages/admin/AdminCancellationRequestsPage';
+import ManagerEventStatsPage from './pages/admin/ManagerEventStatsPage';
 import './index.css';
 
 function PrivateRoute({ children }) {
@@ -62,10 +66,14 @@ function App() {
           <Route path="/admin" element={<AdminPage />}>
             <Route index element={<DashboardHome />} />
             <Route path="events" element={<AdminEventsPage />} />
+            <Route path="events/:eventId/stats" element={<ManagerEventStatsPage />} />
             <Route path="bookings" element={<AdminBookingsPage />} />
             <Route path="venues" element={<AdminVenuesPage />} />
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="organizer-requests" element={<AdminOrganizerRequestsPage />} />
+            <Route path="settings" element={<AdminSettingsPage />} />
+            <Route path="payments" element={<AdminPaymentsPage />} />
+            <Route path="cancellation-requests" element={<AdminCancellationRequestsPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" />} />
