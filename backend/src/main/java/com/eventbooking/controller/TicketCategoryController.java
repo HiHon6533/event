@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller quản lý Danh mục vé (Ví dụ: VIP, VVIP, Standard) và cấu hình giá vé.
+ */
 @RestController
 @RequestMapping("/api/ticket-categories")
 public class TicketCategoryController {

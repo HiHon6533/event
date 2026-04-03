@@ -17,49 +17,51 @@ import java.util.Optional;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    Page<Booking> findByUserId(Long userId, Pageable pageable);
+       Page<Booking> findByUserId(Long userId, Pageable pageable);
 
-    Optional<Booking> findByBookingCode(String bookingCode);
-    
-    Optional<Booking> findByQrSecretToken(String qrSecretToken);
+       Optional<Booking> findByBookingCode(String bookingCode);
 
-    Page<Booking> findByEventId(Long eventId, Pageable pageable);
+       Optional<Booking> findByQrSecretToken(String qrSecretToken);
 
-    List<Booking> findByEventIdAndStatusIn(Long eventId, List<BookingStatus> statuses);
+       Page<Booking> findByEventId(Long eventId, Pageable pageable);
 
-    List<Booking> findByStatus(BookingStatus status);
+       List<Booking> findByEventIdAndStatusIn(Long eventId, List<BookingStatus> statuses);
 
-    @Query("SELECT COALESCE(SUM(b.totalAmount), 0) FROM Booking b WHERE b.status = 'CONFIRMED'")
-    BigDecimal getTotalRevenue();
+       List<Booking> findByStatus(BookingStatus status);
 
-    @Query("SELECT COALESCE(SUM(b.totalAmount), 0) FROM Booking b " +
-           "WHERE b.status = 'CONFIRMED' AND b.bookingDate BETWEEN :start AND :end")
-    BigDecimal getRevenueBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+       @Query("SELECT COALESCE(SUM(b.totalAmount), 0) FROM Booking b WHERE b.status = 'CONFIRMED'")
+       BigDecimal getTotalRevenue();
 
-    @Query("SELECT COUNT(b) FROM Booking b WHERE b.status = :status")
-    long countByStatus(@Param("status") BookingStatus status);
+       @Query("SELECT COALESCE(SUM(b.totalAmount), 0) FROM Booking b " +
+                     "WHERE b.status = 'CONFIRMED' AND b.bookingDate BETWEEN :start AND :end")
+       BigDecimal getRevenueBetween(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
-    Page<Booking> findAllByOrderByCreatedAtDesc(Pageable pageable);
+       @Query("SELECT COUNT(b) FROM Booking b WHERE b.status = :status")
+       long countByStatus(@Param("status") BookingStatus status);
 
-    @Query("SELECT b FROM Booking b WHERE b.event.manager.id = :managerId ORDER BY b.createdAt DESC")
-    Page<Booking> findByEventManagerIdOrderByCreatedAtDesc(@Param("managerId") Long managerId, Pageable pageable);
+       Page<Booking> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
-    @Query("SELECT COALESCE(SUM(b.totalAmount), 0) FROM Booking b WHERE b.status = 'CONFIRMED' AND b.event.manager.id = :managerId")
-    BigDecimal getTotalRevenueByManagerId(@Param("managerId") Long managerId);
+       @Query("SELECT b FROM Booking b WHERE b.event.manager.id = :managerId ORDER BY b.createdAt DESC")
+       Page<Booking> findByEventManagerIdOrderByCreatedAtDesc(@Param("managerId") Long managerId, Pageable pageable);
 
-    @Query("SELECT COALESCE(SUM(b.totalAmount), 0) FROM Booking b " +
-           "WHERE b.status = 'CONFIRMED' AND b.bookingDate BETWEEN :start AND :end AND b.event.manager.id = :managerId")
-    BigDecimal getRevenueBetweenAndManagerId(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end, @Param("managerId") Long managerId);
+       @Query("SELECT COALESCE(SUM(b.totalAmount), 0) FROM Booking b WHERE b.status = 'CONFIRMED' AND b.event.manager.id = :managerId")
+       BigDecimal getTotalRevenueByManagerId(@Param("managerId") Long managerId);
 
-    @Query("SELECT COUNT(b) FROM Booking b WHERE b.event.manager.id = :managerId")
-    long countByManagerId(@Param("managerId") Long managerId);
+       @Query("SELECT COALESCE(SUM(b.totalAmount), 0) FROM Booking b " +
+                     "WHERE b.status = 'CONFIRMED' AND b.bookingDate BETWEEN :start AND :end AND b.event.manager.id = :managerId")
+       BigDecimal getRevenueBetweenAndManagerId(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end,
+                     @Param("managerId") Long managerId);
 
-    @Query("SELECT COUNT(b) FROM Booking b WHERE b.status = :status AND b.event.manager.id = :managerId")
-    long countByStatusAndManagerId(@Param("status") BookingStatus status, @Param("managerId") Long managerId);
+       @Query("SELECT COUNT(b) FROM Booking b WHERE b.event.manager.id = :managerId")
+       long countByManagerId(@Param("managerId") Long managerId);
 
-    @Query("SELECT b FROM Booking b WHERE b.status = 'CONFIRMED' AND b.bookingDate >= :startDate")
-    List<Booking> findConfirmedBookingsSince(@Param("startDate") LocalDateTime startDate);
+       @Query("SELECT COUNT(b) FROM Booking b WHERE b.status = :status AND b.event.manager.id = :managerId")
+       long countByStatusAndManagerId(@Param("status") BookingStatus status, @Param("managerId") Long managerId);
 
-    @Query("SELECT b FROM Booking b WHERE b.status = 'CONFIRMED' AND b.bookingDate >= :startDate AND b.event.manager.id = :managerId")
-    List<Booking> findConfirmedBookingsSinceByManagerId(@Param("startDate") LocalDateTime startDate, @Param("managerId") Long managerId);
+       @Query("SELECT b FROM Booking b WHERE b.status = 'CONFIRMED' AND b.bookingDate >= :startDate")
+       List<Booking> findConfirmedBookingsSince(@Param("startDate") LocalDateTime startDate);
+
+       @Query("SELECT b FROM Booking b WHERE b.status = 'CONFIRMED' AND b.bookingDate >= :startDate AND b.event.manager.id = :managerId")
+       List<Booking> findConfirmedBookingsSinceByManagerId(@Param("startDate") LocalDateTime startDate,
+                     @Param("managerId") Long managerId);
 }

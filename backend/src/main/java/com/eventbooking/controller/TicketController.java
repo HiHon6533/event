@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller quản lý Vé (Ticket), xử lý thao tác lấy danh sách vé theo khu vực và khóa vé tạm thời lúc thanh toán.
+ */
 @RestController
 @RequestMapping("/api/tickets")
 @CrossOrigin(origins = "*")

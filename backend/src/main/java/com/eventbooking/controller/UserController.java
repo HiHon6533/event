@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Controller quản lý tài khoản Người dùng: Cập nhật hồ sơ, đăng ký nâng cấp thành Nhà tổ chức và Quyền Admin quản lý User.
+ */
 @RestController
 @RequestMapping("/api")
 public class UserController {

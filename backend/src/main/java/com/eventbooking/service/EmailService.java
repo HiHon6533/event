@@ -7,6 +7,9 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+/**
+ * Dịch vụ xử lý việc gửi email tới khách hàng (Gửi OTP, Gửi vé QR, Thông báo hủy).
+ */
 @Service
 public class EmailService {
 
@@ -16,6 +19,9 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
+    /**
+     * Cung cấp chức năng gửi mã OTP đăng ký / quên mật khẩu qua email.
+     */
     @Async
     public void sendOtpEmail(String toEmail, String fullName, String otpCode, String purpose) {
         try {
@@ -70,8 +76,11 @@ public class EmailService {
         }
     }
 
+    /**
+     * Gửi vé điện tử kèm mã QR bằng hình ảnh nội tuyến (inline image) sau khi thanh toán thành công.
+     */
     @Async
-    public void sendTicketEmail(String toEmail, String fullName, String bookingCode, String eventTitle, byte[] qrImage, int currentTicket, int totalTickets) {
+    public void sendTicketEmail(String toEmail, String fullName, String bookingCode, String eventTitle, java.time.LocalDateTime eventDate, byte[] qrImage, int currentTicket, int totalTickets) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -79,6 +88,12 @@ public class EmailService {
             helper.setFrom("hoangnguyen6533@gmail.com", "Event Booking System");
             helper.setTo(toEmail);
             helper.setSubject("🎫 Vé điện tử của bạn [" + currentTicket + "/" + totalTickets + "] - " + eventTitle);
+
+            String eventDateStr = "";
+            if (eventDate != null) {
+                java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                eventDateStr = "<p style=\"margin: 0 0 24px; font-size: 16px; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px;\">📅 Bạn đã đặt vé tham gia vào ngày: <strong style=\"color: #10b981; font-size: 18px;\">" + eventDate.format(formatter) + "</strong></p>";
+            }
 
             String htmlContent = """
                 <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
@@ -89,7 +104,7 @@ public class EmailService {
                     <div style="padding: 32px 24px; color: #334155;">
                         <p style="margin: 0 0 12px; font-size: 16px;">Xin chào <strong>%s</strong>,</p>
                         <p style="margin: 0 0 24px; line-height: 1.6;">Cảm ơn bạn đã đặt vé. Thanh toán cho đơn hàng <strong>#%s</strong> của sự kiện <strong>%s</strong> đã thành công.</p>
-                        
+                        %s
                         <div style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 24px; text-align: center; margin: 0 0 24px;">
                             <div style="display: inline-block; background: #10b981; color: white; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 700; margin-bottom: 12px;">VÉ %d / %d</div>
                             <p style="margin: 0 0 16px; font-weight: 600; color: #475569;">MÃ QUÉT TẠI SỰ KIỆN</p>
@@ -102,7 +117,7 @@ public class EmailService {
                         <p style="margin: 0; color: #64748b; font-size: 12px;">© 2026 Event Booking System</p>
                     </div>
                 </div>
-                """.formatted(fullName, bookingCode, eventTitle, currentTicket, totalTickets);
+                """.formatted(fullName, bookingCode, eventTitle, eventDateStr, currentTicket, totalTickets);
 
             helper.setText(htmlContent, true);
             

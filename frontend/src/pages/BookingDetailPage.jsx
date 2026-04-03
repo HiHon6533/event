@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { bookingApi, paymentApi } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { formatCurrency, formatDateTime, STATUS_LABELS, STATUS_COLORS } from '../utils/helpers';
+import { formatCurrency, formatDateTime, formatDate, STATUS_LABELS, STATUS_COLORS } from '../utils/helpers';
 import toast from 'react-hot-toast';
 
 export default function BookingDetailPage() {
@@ -65,6 +65,11 @@ export default function BookingDetailPage() {
       {/* Event Info */}
       <div className="card" style={{ padding: 24, marginBottom: 24 }}>
         <h3 style={{ fontWeight: 700, marginBottom: 12 }}>📅 {booking.eventTitle}</h3>
+        {booking.eventDate && (
+          <p style={{ color: 'var(--success)', fontWeight: 600, marginBottom: 8 }}>
+            Ngày tham gia đi xem: {formatDate(booking.eventDate)}
+          </p>
+        )}
         <p style={{ color: 'var(--text-muted)' }}>Thời gian đặt: {formatDateTime(booking.bookingDate)}</p>
       </div>
 

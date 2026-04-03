@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Dịch vụ phụ trách nghiệp vụ Đặt vé (Booking), bao gồm kiểm tra trạng thái vé, tạo đơn, hủy đơn.
+ */
 @Service
 public class BookingServiceImpl implements BookingService {
 
@@ -69,6 +72,7 @@ public class BookingServiceImpl implements BookingService {
                 .event(event)
                 .bookingCode(bookingCode)
                 .bookingDate(LocalDateTime.now())
+                .eventDate(request.getEventDate())
                 .status(BookingStatus.PENDING)
                 .note(request.getNote())
                 .qrSecretToken(null) // Assigned later when paid

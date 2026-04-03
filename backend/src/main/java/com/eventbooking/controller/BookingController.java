@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Controller xử lý các API liên quan đến đơn đặt vé (Booking) của người dùng và Admin.
+ */
 @RestController
 @RequestMapping("/api/bookings")
 public class BookingController {

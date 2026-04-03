@@ -18,6 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * Dịch vụ xử lý nghiệp vụ thanh toán vé sự kiện.
+ */
 @Service
 public class PaymentServiceImpl implements PaymentService {
 
@@ -33,6 +36,9 @@ public class PaymentServiceImpl implements PaymentService {
         this.paymentMapper = paymentMapper;
     }
 
+    /**
+     * Xử lý thanh toán. Kiểm tra quyền, trạng thái đơn hàng và mô phỏng giao dịch thành công.
+     */
     @Override
     @Transactional
     public PaymentResponse processPayment(Long userId, PaymentRequest request) {
@@ -67,6 +73,9 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentMapper.toResponse(payment);
     }
 
+    /**
+     * Lấy chi tiết thông tin giao dịch dựa trên ID của đơn đặt vé.
+     */
     @Override
     @Transactional(readOnly = true)
     public PaymentResponse getPaymentByBookingId(Long bookingId) {

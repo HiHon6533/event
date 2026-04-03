@@ -18,4 +18,6 @@ public class BookingRequest {
     private List<BookingDetailRequest> items;
 
     private String note;
+
+    private java.time.LocalDateTime eventDate;
 }

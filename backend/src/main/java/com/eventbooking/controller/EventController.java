@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller quản lý luồng Sự kiện: Khách hàng tìm kiếm, xem chi tiết và Admin/Manager quản lý.
+ */
 @RestController
 @RequestMapping("/api/events")
 public class EventController {

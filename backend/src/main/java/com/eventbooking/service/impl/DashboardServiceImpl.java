@@ -28,6 +28,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+/**
+ * Dịch vụ xử lý dữ liệu tổng quan thống kê (Dashboard) như tổng doanh thu, số lượng đơn, hiển thị biểu đồ.
+ */
 @Service
 public class DashboardServiceImpl implements DashboardService {
 

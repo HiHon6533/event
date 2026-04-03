@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Dịch vụ tạo mã vạch QR tĩnh (Byte Array) bằng thư viện ZXing để gán vào vé check-in.
+ */
 @Service
 public class QRCodeService {
 

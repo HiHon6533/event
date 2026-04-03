@@ -57,6 +57,9 @@ public class Booking {
     @Column(name = "booking_date", nullable = false)
     private LocalDateTime bookingDate;
 
+    @Column(name = "event_date")
+    private LocalDateTime eventDate;
+
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<BookingDetail> bookingDetails = new ArrayList<>();

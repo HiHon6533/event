@@ -19,8 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 
 /**
- * REST endpoints for uploading images.
- * Use form-data with key "file" to upload.
+ * Controller xử lý Upload hình ảnh (Banner, Thumbnail, Avatar, Sơ đồ) lên server cục bộ qua định dạng Multipart File.
  */
 @RestController
 @RequestMapping("/api/upload")

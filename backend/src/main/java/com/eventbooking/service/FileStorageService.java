@@ -14,8 +14,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 /**
- * Handles file upload/storage on local disk.
- * Files are saved under the configured upload directory (default: ./uploads).
+ * Dịch vụ xử lý lưu trữ hình ảnh tải lên máy chủ cục bộ (Uploads), chống trùng lặp tên file.
  */
 @Service
 @Slf4j

@@ -22,6 +22,9 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Controller xử lý nghiệp vụ thanh toán, tích hợp cổng thanh toán trực tuyến VNPay Sandbox và xử lý Callback.
+ */
 @RestController
 @RequestMapping("/api/payment")
 public class PaymentController {
@@ -114,6 +117,7 @@ public class PaymentController {
                             booking.getUser().getFullName(),
                             booking.getBookingCode(),
                             booking.getEvent().getTitle(),
+                            booking.getEventDate(),
                             qrImage,
                             i,
                             totalTickets

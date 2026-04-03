@@ -799,6 +799,27 @@ textarea.form-input {
   mask-repeat: no-repeat;
 }
 
+/* Calendar Date Selection Additions */
+.tb-calendar-day.is-selectable:hover {
+  background: rgba(216, 27, 46, 0.15);
+  transform: scale(1.1);
+  color: var(--primary);
+}
+
+.tb-calendar-day.is-selected {
+  background: var(--primary) !important;
+  color: white !important;
+  font-weight: bold;
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(216, 27, 46, 0.4);
+}
+
+.tb-calendar-day.is-today {
+  border: 2px solid var(--primary-light);
+  color: var(--primary-light);
+  font-weight: bold;
+}
+
 @media (max-width: 900px) {
   .tb-ticket-card {
     grid-template-columns: 1fr;

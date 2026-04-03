@@ -18,6 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Dịch vụ quản lý Danh mục vé (Ví dụ: Vé VIP, Standard), giới hạn số lượng và thiết lập giá vé cho sự kiện.
+ */
 @Service
 public class TicketCategoryServiceImpl implements TicketCategoryService {
 

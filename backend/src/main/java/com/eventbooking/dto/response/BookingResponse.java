@@ -26,6 +26,7 @@ public class BookingResponse {
     private Boolean isCheckedIn;
     private String note;
     private LocalDateTime bookingDate;
+    private LocalDateTime eventDate;
     private List<BookingDetailResponse> bookingDetails;
     private PaymentResponse payment;
     private LocalDateTime createdAt;

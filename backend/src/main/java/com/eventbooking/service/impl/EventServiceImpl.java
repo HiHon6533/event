@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.security.access.AccessDeniedException;
 
+/**
+ * Dịch vụ lớn quản lý mọi logic của Sự kiện: Tạo mới, tìm kiếm tối ưu (Smart search), phân trang, gợi ý, và phê duyệt.
+ */
 @Service
 public class EventServiceImpl implements EventService {
 

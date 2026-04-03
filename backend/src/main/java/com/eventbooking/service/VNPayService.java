@@ -12,6 +12,9 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+/**
+ * Dịch vụ cấu hình và mã hóa chữ ký giao dịch cho cổng thanh toán VNPay (HMAC SHA512).
+ */
 @Service
 public class VNPayService {
 
